@@ -3,7 +3,7 @@ en:
     admin:
       site_settings:
         categories:
-          TODO_plugin_name: "Plugin Name"
+          discourse_category_language: "Discourse Category Language"
   js:
-    discourse_plugin_name:
+    discourse_category_language:
       placeholder: placeholder
