@@ -43,7 +43,16 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
 
   @action
   async deleteLanguage(language) {
-    if (language.id === 1) {
+    const confirmed = window.confirm(
+      I18n.t("js.discourse_category_language.confirm_delete", { name: language.name })
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const DEFAULT_LANGUAGE_ID = this.siteSettings.discourse_category_language_default_id;
+    if (language.id === DEFAULT_LANGUAGE_ID) {
       console.warn("Cannot delete default language.");
       return;
     }

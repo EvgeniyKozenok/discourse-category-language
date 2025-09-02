@@ -36,7 +36,7 @@ module DiscourseCategoryLanguage
       def destroy
         language = DiscourseCategoryLanguage::Language.find(params[:id])
 
-        if language.id == 1
+        if language.id == ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
           render json: { error: I18n.t("admin_js.admin.errors.cannot_delete_default") }, status: 403
           return
         end

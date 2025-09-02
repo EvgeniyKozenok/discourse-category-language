@@ -33,6 +33,12 @@ export default class CategoryLanguageSettings extends Component {
       this.selectedLanguage = this.availableLanguages.find(
         (l) => +l.value === +selectedId
       );
+
+      if (!this.selectedLanguage) {
+        this.selectedLanguage = this.availableLanguages.find(
+          (l) => +l.value === +defaultId
+        );
+      }
     } catch (err) {
       this.availableLanguages = [];
       this.selectedLanguage = null;

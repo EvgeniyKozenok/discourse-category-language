@@ -22,3 +22,4 @@ en:
       slug_exists: "Slug already exists"
       name_slug_required: "Name and slug are required"
       label: "Select Category Language"
+      confirm_delete: "Are you sure you want to delete the language %{name}?"
