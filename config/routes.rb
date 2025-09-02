@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
 DiscourseCategoryLanguage::Engine.routes.draw do
-  get "/examples" => "examples#index"
-  # define routes here
+  get "/" => "/admin/plugins#index"
+  get "/list" => "admin/admin_category_language#list"
 end
 
-Discourse::Application.routes.draw { mount ::DiscourseCategoryLanguage::Engine, at: "discourse-category-language" }
+Discourse::Application.routes.draw do
+  scope "/admin/discourse-category-language", constraints: StaffConstraint.new do
+    mount ::DiscourseCategoryLanguage::Engine, at: "/"
+  end
+end

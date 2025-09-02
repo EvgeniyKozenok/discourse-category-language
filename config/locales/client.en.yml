@@ -1,9 +1,19 @@
 en:
   admin_js:
     admin:
+      title: "Category Languages"
+      add_language_button: "Add Language"
+      name_header: "Name"
+      slug_header: "Slug"
+      actions_header: "Actions"
+      title_management: "Language Management"
+      edit_language_title: "Edit Language"
+      add_language_title: "Add Language"
+      cancel_button: "Cancel"
+      save_button: "Save"
       site_settings:
         categories:
-          discourse_category_language: "Discourse Category Language"
+          discourse_category_language: "Category Languages"
   js:
     discourse_category_language:
       placeholder: placeholder

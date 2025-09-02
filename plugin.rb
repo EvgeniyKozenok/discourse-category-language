@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
+# frozen_string_literal: true
 # name: discourse-category-language
-# about: TODO
-# meta_topic_id: TODO
+# about: Add a language setting to categories
 # version: 0.0.1
-# authors: Discourse
-# url: TODO
+# authors: john
+# url: https://github.com/your-username/discourse-category-language
 # required_version: 2.7.0
 
 enabled_site_setting :discourse_category_language_enabled
@@ -16,6 +16,9 @@ end
 
 require_relative "lib/discourse_category_language/engine"
 
+
 after_initialize do
-  # Code which should run after Rails has finished booting
+
+  add_admin_route "admin.title", "discourse-category-language"
+
 end

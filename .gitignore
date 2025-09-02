@@ -1,3 +1,12 @@
 node_modules
 /gems
 /auto_generated
+
+.DS_Store
+*.swp
+*.tmp
+log/
+tmp/
+node_modules/
+.bundle/
+.idea

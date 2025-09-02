@@ -1,0 +1,9 @@
+<section class="field">
+  <label>Язык категории</label>
+  <ComboBox
+    @content={{this.availableLanguages}}
+    @value={{this.category.custom_fields.language}}
+    @valueProperty="value"
+    @onChange={{this.onChange}}
+  />
+</section>
