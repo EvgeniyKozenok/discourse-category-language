@@ -14,6 +14,10 @@ en:
       site_settings:
         categories:
           discourse_category_language: "Category Languages"
+      errors:
+        cannot_delete_default: "Default language cannot be deleted."
   js:
     discourse_category_language:
       placeholder: placeholder
+      slug_exists: "Slug already exists"
+      name_slug_required: "Name and slug are required"

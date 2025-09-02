@@ -1,5 +1,8 @@
+// assets/javascripts/discourse/controllers/admin-plugins-discourse-category-language.js
 import Controller from "@ember/controller";
 import { tracked } from "@glimmer/tracking";
+import { action } from "@ember/object";
+import { ajax } from "discourse/lib/ajax";
 
 export default class AdminPluginsDiscourseCategoryLanguageController extends Controller {
   @tracked languages = [];
@@ -8,56 +11,94 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
   @tracked newLanguageName = "";
   @tracked newLanguageSlug = "";
 
-  actions = {
-    addLanguage() {
-      this.editingLanguage = null;
-      this.newLanguageName = "";
-      this.newLanguageSlug = "";
-      this.showModal = true;
-    },
+  constructor() {
+    super(...arguments);
+    this.loadLanguages();
+  }
 
-    editLanguage(language) {
-      this.editingLanguage = language;
-      this.newLanguageName = language.name;
-      this.newLanguageSlug = language.slug;
-      this.showModal = true;
-    },
-
-    deleteLanguage(language) {
-      if (language.id === 1) {
-        console.warn("Cannot delete default language.");
-        return;
-      }
-
-      this.languages = this.languages.filter(lang => lang.id !== language.id);
-      // Здесь будет отправка запроса на сервер для удаления
-      console.log("Deleted language:", language);
-    },
-
-    closeModal() {
-      this.showModal = false;
-    },
-
-    saveLanguage() {
-      if (!this.newLanguageName || !this.newLanguageSlug) {
-        // Логика обработки ошибок
-        return;
-      }
-
-      if (this.editingLanguage) {
-        this.editingLanguage.name = this.newLanguageName;
-        this.editingLanguage.slug = this.newLanguageSlug;
-        // Здесь будет отправка запроса на сервер для обновления
-        console.log("Updated language:", this.editingLanguage);
-      } else {
-        const newId = this.languages.length > 0 ? Math.max(...this.languages.map(lang => lang.id)) + 1 : 1;
-        const newLanguage = { id: newId, name: this.newLanguageName, slug: this.newLanguageSlug };
-        this.languages.push(newLanguage);
-        // Здесь будет отправка запроса на сервер для создания
-        console.log("Created new language:", newLanguage);
-      }
-
-      this.showModal = false;
+  async loadLanguages() {
+    try {
+      const response = await ajax("/admin/discourse-category-language/list");
+      this.languages = response.languages;
+    } catch (err) {
+      console.error("Error loading languages:", err);
     }
-  };
+  }
+
+  @action
+  addLanguage() {
+    this.editingLanguage = null;
+    this.newLanguageName = "";
+    this.newLanguageSlug = "";
+    this.showModal = true;
+  }
+
+  @action
+  editLanguage(language) {
+    this.editingLanguage = language;
+    this.newLanguageName = language.name;
+    this.newLanguageSlug = language.slug;
+    this.showModal = true;
+  }
+
+  @action
+  async deleteLanguage(language) {
+    if (language.id === 1) {
+      console.warn("Cannot delete default language.");
+      return;
+    }
+
+    try {
+      await ajax(`/admin/discourse-category-language/${language.id}`, {
+        type: "DELETE",
+      });
+      this.languages = this.languages.filter((l) => l.id !== language.id);
+    } catch (err) {
+      console.error("Error delete language:", err);
+    }
+  }
+
+  @action
+  closeModal() {
+    this.showModal = false;
+  }
+
+  @action
+  async saveLanguage() {
+    if (!this.newLanguageName || !this.newLanguageSlug) {
+      alert(I18n.t("js.discourse_category_language.name_slug_required"));
+      return;
+    }
+
+    const slugExists = this.languages.some(
+      (l) => l.slug === this.newLanguageSlug && (!this.editingLanguage || l.id !== this.editingLanguage.id)
+    );
+    if (slugExists) {
+      alert(I18n.t("js.discourse_category_language.slug_exists"));
+      return;
+    }
+
+    try {
+      if (this.editingLanguage) {
+        const response = await ajax(`/admin/discourse-category-language/${this.editingLanguage.id}`, {
+          type: "PATCH",
+          data: { language: { name: this.newLanguageName, slug: this.newLanguageSlug } },
+        });
+
+        this.languages = this.languages.map((l) =>
+          l.id === this.editingLanguage.id ? response.language : l
+        );
+      } else {
+        const response = await ajax("/admin/discourse-category-language", {
+          type: "POST",
+          data: { language: { name: this.newLanguageName, slug: this.newLanguageSlug } },
+        });
+        this.languages = [...this.languages, response.language];
+      }
+
+      this.showModal = false;
+    } catch (err) {
+      console.error("Error saving language:", err);
+    }
+  }
 }

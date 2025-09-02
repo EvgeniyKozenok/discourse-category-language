@@ -1,6 +1,7 @@
+// assets/javascripts/discourse/models/language.js
 import Model, { attr } from "@ember-data/model";
 
 export default class Language extends Model {
-  @attr("string") id;
   @attr("string") name;
+  @attr("string") slug;
 }
