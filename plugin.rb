@@ -10,6 +10,7 @@ enabled_site_setting :discourse_category_language_enabled
 
 module ::DiscourseCategoryLanguage
   PLUGIN_NAME = "discourse-category-language"
+  DEFAULT_LANGUAGE_ID = 1
 end
 
 require_relative "lib/discourse_category_language/engine"

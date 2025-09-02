@@ -1,29 +1,47 @@
-/* eslint-disable ember/no-classic-components */
+// app/assets/javascripts/components/category-language-settings.js
 import Component from "@ember/component";
-import { classNames, tagName } from "@ember-decorators/component";
-import { inject as service } from "@ember/service";
+import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
-import ComboBox from "select-kit/components/combo-box";
-
-console.log("CategoryLanguageSettings: Component loaded");
+import { inject as service } from "@ember/service";
+import { ajax } from "discourse/lib/ajax";
+import I18n from "I18n";
 
 export default class CategoryLanguageSettings extends Component {
   @service siteSettings;
 
-  @action
-  onChange(value) {
-    console.log("Selected language:", value);
-    this.set("category.custom_fields.language", value);
+  @tracked availableLanguages = [];
+  @tracked selectedLanguage = null;
+  @tracked label = I18n.t("discourse_category_language.label");
+
+  constructor() {
+    super(...arguments);
+    this.loadLanguages();
   }
 
-  get availableLanguages() {
-    // В идеале, список языков должен браться из настроек Discourse.
-    // Пока мы используем простой статический список для тестирования.
-    return [
-      { name: "English", value: "en" },
-      { name: "Русский", value: "ru" },
-      { name: "Deutsch", value: "de" },
-      { name: "Français", value: "fr" },
-    ];
+  async loadLanguages() {
+    try {
+      const response = await ajax("/admin/discourse-category-language/list");
+
+      this.availableLanguages = response.languages.map((l) => ({
+        label: l.name,
+        value: l.id,
+      }));
+
+      const defaultId = this.siteSettings.discourse_category_language_default_id;
+      const selectedId = this.category.custom_fields.language_id || defaultId;
+
+      this.selectedLanguage = this.availableLanguages.find(
+        (l) => +l.value === +selectedId
+      );
+    } catch (err) {
+      this.availableLanguages = [];
+      this.selectedLanguage = null;
+    }
+  }
+
+  @action
+  onChange(newLanguageId) {
+    this.set("category.custom_fields.language_id", newLanguageId);
+    this.category.save();
   }
 }

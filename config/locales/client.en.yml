@@ -21,3 +21,4 @@ en:
       placeholder: placeholder
       slug_exists: "Slug already exists"
       name_slug_required: "Name and slug are required"
+      label: "Select Category Language"

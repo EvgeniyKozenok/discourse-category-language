@@ -1,4 +1,12 @@
-discourse_category_language:
+plugins:
   discourse_category_language_enabled:
-    default: false
+    default: true
     client: true
+    type: bool
+    hidden: false
+
+  discourse_category_language_default_id:
+    default: 1
+    client: true
+    type: integer
+    hidden: false

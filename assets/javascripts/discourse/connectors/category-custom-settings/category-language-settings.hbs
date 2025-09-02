@@ -1,9 +1,10 @@
 <section class="field">
-  <label>Язык категории</label>
+  <label>{{this.label}}</label>
   <ComboBox
     @content={{this.availableLanguages}}
-    @value={{this.category.custom_fields.language}}
+    @value={{this.selectedLanguage.label}}
     @valueProperty="value"
+    @nameProperty="label"
     @onChange={{this.onChange}}
   />
 </section>
