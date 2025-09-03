@@ -3,6 +3,7 @@
 
 DiscourseCategoryLanguage::Engine.routes.draw do
   get "/" => "/admin/plugins#index"
+  get "/get-slug/:id" => "admin/admin_category_language#getSlug"
   get "/list" => "admin/admin_category_language#list"
   post "/" => "admin/admin_category_language#create"
   patch "/:id" => "admin/admin_category_language#update"

@@ -11,6 +11,12 @@ module DiscourseCategoryLanguage
         render json: { languages: languages.as_json(only: [:id, :name, :slug]) }
       end
 
+      # GET /admin/discourse-category-language/get-slug/:id
+      def getSlug
+        language = DiscourseCategoryLanguage::Language.find(params[:id])
+        render json: { slug: language.slug }
+      end
+
       # POST /admin/discourse-category-language
       def create
         language = DiscourseCategoryLanguage::Language.new(language_params)
