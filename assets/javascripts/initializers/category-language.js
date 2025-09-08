@@ -12,7 +12,13 @@ export default {
 
       function updateHtmlLang(categoryId) {
         const slug = categoryCache.get(categoryId);
-        document.documentElement.setAttribute("lang", slug);
+        const el = document.documentElement
+        const lang = 'lang'
+        if (el.getAttribute(lang) === slug) {
+          console.log("SPA lang (no change):", slug);
+          return;
+        }
+        el.setAttribute(lang, slug);
       }
 
       api.onPageChange(async () => {
@@ -27,8 +33,8 @@ export default {
         if (!categoryId) return;
 
         if (categoryCache.has(categoryId)) {
-          updateHtmlLang(categoryId);
           console.log("SPA lang (from cache):", categoryCache.get(categoryId));
+          updateHtmlLang(categoryId);
           return;
         }
 
@@ -43,8 +49,8 @@ export default {
 
         categoryCache.set(categoryId, slug);
 
-        updateHtmlLang(categoryId);
         console.log("SPA lang (fetched):", slug);
+        updateHtmlLang(categoryId);
       });
     });
   },

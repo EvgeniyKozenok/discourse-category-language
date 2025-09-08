@@ -1,3 +1,5 @@
+# lib/discourse_category_language/admin/languages_controller.rb
+
 module DiscourseCategoryLanguage
   class Admin::LanguagesController < Admin::AdminController
     def index
