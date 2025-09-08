@@ -73,7 +73,7 @@ export default {
 
         try {
           const { slug, alternates } = await ajax(
-            `/admin/discourse-category-language/spa-meta/${entityId}?type=${entityType}`
+            `/admin/discourse-category-language/spa-meta/${entityId}/${entityType}`
           );
 
           categoryCache.set(entityId, { slug, alternates });

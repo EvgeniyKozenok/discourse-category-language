@@ -13,7 +13,7 @@ module DiscourseCategoryLanguage
 
       # GET /admin/discourse-category-language/spa-meta/:id
       def spa_meta
-        entity_type = params[:type]
+        entity_type = params[:entity]
         entity_id = params[:id]
 
         case entity_type
