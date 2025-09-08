@@ -4,9 +4,3 @@ plugins:
     client: true
     type: bool
     hidden: false
-
-  discourse_category_language_default_id:
-    default: 1
-    client: true
-    type: integer
-    hidden: false

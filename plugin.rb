@@ -19,6 +19,8 @@ after_initialize do
     # ignore if not present here (might be loaded by engine)
   end
 
+  add_admin_route "admin.title", "discourse-category-language"
+
   # --- prepend helper modules throw loader ---
   ::DiscourseCategoryLanguage::HelpersLoader.prepend_helpers
 
@@ -30,4 +32,8 @@ after_initialize do
 
   # --- SkipSkeleton for ApplicationController render override (prepend) ---
   ::ApplicationController.prepend ::DiscourseCategoryLanguage::ApplicationControllerSkipSkeleton
+
+  add_to_serializer(:site, :discourse_category_language_default_id) do
+    ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
+  end
 end

@@ -28,6 +28,7 @@ export default class CategoryLanguageSettings extends Component {
       }));
 
       const defaultId = this.siteSettings.discourse_category_language_default_id;
+      console.log("Default language ID:", defaultId);
       const selectedId = this.category.custom_fields.language_id || defaultId;
 
       this.selectedLanguage = this.availableLanguages.find(
