@@ -6,51 +6,83 @@ export default {
   name: "category-language",
   initialize() {
     withPluginApi("0.8.7", (api) => {
-      const siteSettings = api.container.lookup("service:siteSettings");
-
       const categoryCache = new Map();
+      let isLoaded = true;
 
-      function updateHtmlLang(categoryId) {
-        const slug = categoryCache.get(categoryId);
-        const el = document.documentElement
-        const lang = 'lang'
-        if (el.getAttribute(lang) === slug) {
-          console.log("SPA lang (no change):", slug);
+      function updateHtmlLang(slug) {
+        const el = document.documentElement;
+        if (el.getAttribute("lang") === slug) return;
+        el.setAttribute("lang", slug);
+        console.log("SPA lang updated:", slug);
+      }
+
+      function updateAlternateLinks(alternates) {
+        if (isLoaded) {
+          // Only update the first time the SPA is loaded
+          // Render with server side rendered content
+          isLoaded = false;
           return;
         }
-        el.setAttribute(lang, slug);
+
+        document.querySelectorAll('link[rel="alternate"]').forEach(el => el.remove());
+        Object.entries(alternates).forEach(([lang, url]) => {
+          const link = document.createElement("link");
+          link.rel = "alternate";
+          link.hreflang = lang;
+          link.href = url;
+          document.head.appendChild(link);
+        });
+        //console.log("SPA alternates updated:", alternates);
+      }
+
+      function getEntityFromUrl() {
+        const path = window.location.pathname;
+        let match, entityId, entityType;
+
+        // Topic URL: /t/:slug/:topicId(/:postNumber)?
+        match = path.match(/^\/t\/[^/]+\/(\d+)/);
+        if (match) {
+          entityId = match[1];
+          entityType = "topic";
+          return { entityId, entityType };
+        }
+
+        // Category URL: /c/:slug/:categoryId(/:topicId)?
+        match = path.match(/^\/c\/[^/]+\/(\d+)/);
+        if (match) {
+          entityId = match[1];
+          entityType = "category";
+          return { entityId, entityType };
+        }
+
+        return null;
       }
 
       api.onPageChange(async () => {
-        const topics = document.querySelectorAll("[data-topic-id]");
-        if (!topics || topics.length === 0) return;
+        const entity = getEntityFromUrl();
+        if (!entity) return;
 
-        const firstTopicId = topics[0].dataset.topicId;
-        if (!firstTopicId) return;
+        const { entityId, entityType } = entity;
 
-        const topicData = await ajax(`/t/${firstTopicId}.json`);
-        const categoryId = topicData?.category_id;
-        if (!categoryId) return;
-
-        if (categoryCache.has(categoryId)) {
-          console.log("SPA lang (from cache):", categoryCache.get(categoryId));
-          updateHtmlLang(categoryId);
+        if (categoryCache.has(entityId)) {
+          const cached = categoryCache.get(entityId);
+          updateHtmlLang(cached.slug);
+          updateAlternateLinks(cached.alternates);
           return;
         }
 
-        const categoryData = await ajax(`/c/${categoryId}/show.json`);
-        const languageId =
-          categoryData?.category?.custom_fields?.language_id ||
-          siteSettings.discourse_category_language_default_id;
+        try {
+          const { slug, alternates } = await ajax(
+            `/admin/discourse-category-language/spa-meta/${entityId}?type=${entityType}`
+          );
 
-        const { slug } = await ajax(
-          `/admin/discourse-category-language/get-slug/${languageId}`
-        );
+          categoryCache.set(entityId, { slug, alternates });
 
-        categoryCache.set(categoryId, slug);
-
-        console.log("SPA lang (fetched):", slug);
-        updateHtmlLang(categoryId);
+          updateHtmlLang(slug);
+          updateAlternateLinks(alternates);
+        } catch (err) {
+          //console.warn("Failed to fetch SPA meta:", err);
+        }
       });
     });
   },

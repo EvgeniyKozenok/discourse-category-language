@@ -11,10 +11,37 @@ module DiscourseCategoryLanguage
         render json: { languages: languages.as_json(only: [:id, :name, :slug]) }
       end
 
-      # GET /admin/discourse-category-language/get-slug/:id
-      def getSlug
-        language = DiscourseCategoryLanguage::Language.find(params[:id])
-        render json: { slug: language.slug }
+      # GET /admin/discourse-category-language/spa-meta/:id
+      def spa_meta
+        entity_type = params[:type]
+        entity_id = params[:id]
+
+        case entity_type
+        when "topic"
+          topic = Topic.find_by(id: entity_id)
+          if topic
+            category = topic.category
+            alternates = helpers.alternates_for_topic(topic)
+            lang_slug = helpers.language_slug_for_category(category)
+          else
+            render json: { error: "Topic not found" }, status: 404
+            return
+          end
+        when "category"
+          category = Category.find_by(id: entity_id)
+          if category
+            alternates = helpers.alternates_for_category(category)
+            lang_slug = helpers.language_slug_for_category(category)
+          else
+            render json: { error: "Category not found" }, status: 404
+            return
+          end
+        else
+          render json: { error: "Unknown type" }, status: 400
+          return
+        end
+
+        render json: { slug: lang_slug, alternates: alternates }
       end
 
       # POST /admin/discourse-category-language
