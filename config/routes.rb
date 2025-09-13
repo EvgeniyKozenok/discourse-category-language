@@ -13,6 +13,7 @@ DiscourseCategoryLanguage::Engine.routes.draw do
   patch "/categories/:id" => "admin/admin_category_relations#update"
 
   get "/topics/:id/alternates" => "admin/admin_topic_relations#alternates"
+  patch "/topics/:id/alternates_update" => "admin/admin_topic_relations#alternates_update"
   patch "/topics/:id/:x_default/assign_default" => "admin/admin_topic_relations#assign_default"
 end
 

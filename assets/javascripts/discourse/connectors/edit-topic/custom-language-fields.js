@@ -25,6 +25,9 @@ export default class CustomLanguageFields extends Component {
 
       this.updateFromResponse(data);
 
+      console.log(" this.isAlternates = ", this.isAlternates);
+      console.log(" this.selectedTopics: ", this.selectedTopics);
+      console.log(" data: ", data);
     } catch (e) {
       console.error("Failed to load alternates", e);
       this.clearState();
@@ -56,12 +59,26 @@ export default class CustomLanguageFields extends Component {
   }
 
   @action
-  onChangeTopics(selectedArray) {
-    this.selectedTopics = selectedArray;
-    const ids = selectedArray.map(t => t.value);
-    console.log("onChangeTopics", ids);
-    return;
+  async onChangeTopics(alternates) {
+    this.selectedTopics = alternates;
+
+    const topicId = this.args.buffered?.get?.("id");
+
+    if (!topicId) return;
+
+    try {
+      const response = await ajax(`/admin/discourse-category-language/topics/${topicId}/alternates_update`, {
+        type: "PATCH",
+        data: { alternates: alternates },
+      });
+
+      this.updateFromResponse(response);
+    } catch (err) {
+      console.error("Failed to update alternates", err);
+      this.clearState();
+    }
   }
+
 
   // --- вспомогательные методы ---
 

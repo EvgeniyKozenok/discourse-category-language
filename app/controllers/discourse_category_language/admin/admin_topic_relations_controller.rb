@@ -40,6 +40,7 @@ module DiscourseCategoryLanguage
         # Лимит
         topics_scope = topics_scope.limit(50)
 
+        # Форматируем ответ
         formatted = topics_scope.includes(:category).map do |t|
           cat = t.category
           lang_id = category_language_id(cat)
@@ -53,12 +54,15 @@ module DiscourseCategoryLanguage
 
         # Определяем текущие выбранные топики
         if is_alternates
-          selected_topics = Array(topic.custom_fields["topic_alternates"]).map(&:to_i)
+          selected_topics = Array(topic.custom_fields["alternates"]).map(&:to_i)
           selected_topic = nil
         else
           selected_topics = []
           selected_topic = topic.custom_fields["x_defaults"]&.to_i
         end
+
+        # Добавляем выбранные топики в массив доступных топиков, если их нет
+        formatted = ensure_selected_included(formatted, selected_topics + [selected_topic].compact)
 
         render json: {
           topics: formatted,
@@ -66,6 +70,60 @@ module DiscourseCategoryLanguage
           selected_topics: selected_topics,
           selected_topic: selected_topic
         }
+      end
+
+      # PATCH /admin/discourse-category-language/topics/:id/alternates_update
+      def alternates_update
+        topic = Topic.find_by(id: params[:id])
+        raise Discourse::NotFound unless topic
+
+        new_alternates = Array(params[:alternates]).map(&:to_i)
+
+        ActiveRecord::Base.transaction do
+          # 1️⃣ Сохраняем массив альтернатив в текущем топике
+          topic.custom_fields["alternates"] = new_alternates
+          topic.save_custom_fields
+          Rails.logger.info("Updated topic #{topic.id} alternates: #{new_alternates.inspect}")
+
+          # 2️⃣ Проставляем x_defaults для выбранных альтернатив
+          Topic.where(id: new_alternates).find_each do |alt_topic|
+            alt_topic.custom_fields["x_defaults"] = topic.id
+            alt_topic.save_custom_fields
+            Rails.logger.info("Set x_defaults for topic #{alt_topic.id} -> #{topic.id}")
+          end
+
+          # 3️⃣ Удаляем x_defaults для топиков, которые раньше были альтами, а сейчас нет
+          Topic.all.each do |other_topic|
+            next if new_alternates.include?(other_topic.id)
+            if other_topic.custom_fields["x_defaults"].to_i == topic.id
+              other_topic.custom_fields.delete("x_defaults")
+              other_topic.save_custom_fields
+              Rails.logger.info("Removed x_defaults for topic #{other_topic.id}")
+            end
+          end
+
+          # 4️⃣ Убираем текущие альтернативы из чужих массивов alternates
+          Topic.where.not(id: topic.id).find_each do |other_topic|
+            alt_array = Array(other_topic.custom_fields["alternates"]).map(&:to_i)
+            updated = false
+
+            new_alternates.each do |alt_id|
+              if alt_array.include?(alt_id)
+                alt_array.delete(alt_id)
+                updated = true
+              end
+            end
+
+            if updated
+              other_topic.custom_fields["alternates"] = alt_array
+              other_topic.save_custom_fields
+              Rails.logger.info("Cleaned alternates for topic #{other_topic.id}, removed: #{new_alternates.inspect}")
+            end
+          end
+        end
+
+        # 5️⃣ Возвращаем фронту готовый JSON через метод alternates
+        alternates
       end
 
       # PATCH /admin/discourse-category-language/topics/:id/:x_default/assign_default
@@ -124,6 +182,25 @@ module DiscourseCategoryLanguage
 
       def alternates_mode?(category)
         category_language_id(category) == default_language_id
+      end
+
+      # Добавляет выбранные топики в массив доступных, если их там нет
+      def ensure_selected_included(formatted, selected_ids)
+        existing_ids = formatted.map { |t| t[:value] }
+        selected_ids.compact.each do |id|
+          next if existing_ids.include?(id)
+          t = Topic.find_by(id: id)
+          next unless t
+          cat = t.category
+          lang_id = category_language_id(cat)
+          lang = DiscourseCategoryLanguage::Language.find_by(id: lang_id)
+          formatted << {
+            value: t.id,
+            label: "#{t.id}: #{t.title} (#{cat.id}: #{cat.name} [#{lang_id}: #{lang&.slug}])",
+            disabled: false
+          }
+        end
+        formatted
       end
     end
   end
