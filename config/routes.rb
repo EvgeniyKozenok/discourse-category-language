@@ -11,6 +11,8 @@ DiscourseCategoryLanguage::Engine.routes.draw do
 
   get "/categories" => "admin/admin_category_relations#index"
   patch "/categories/:id" => "admin/admin_category_relations#update"
+
+  get "/topics/:id/alternates" => "admin/admin_topic_relations#alternates"
 end
 
 Discourse::Application.routes.draw do

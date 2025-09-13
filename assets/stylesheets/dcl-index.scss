@@ -1,0 +1,10 @@
+.custom-language-field-row {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 100%;
+
+  .custom-language-label {
+    font-weight: bold;
+    margin-bottom: 0.25em;
+  }
+}

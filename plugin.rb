@@ -11,6 +11,8 @@ enabled_site_setting :discourse_category_language_enabled
 require_relative "lib/discourse_category_language"
 require_relative "lib/discourse_category_language/engine"
 
+register_asset "stylesheets/dcl-index.scss"
+
 after_initialize do
   # --- models ---
   begin

@@ -73,7 +73,7 @@ module DiscourseCategoryLanguage
             # CASE: assign alternates (current category becomes default)
           elsif alternates
             current_language_id = category.custom_fields["language_id"]&.to_i
-            default_language_id = SiteSetting.default_language_id rescue nil
+            default_language_id = ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
 
             if current_language_id.present? && default_language_id.present? && current_language_id != default_language_id
               raise Discourse::InvalidParameters.new("Only default-language category can have alternates")
