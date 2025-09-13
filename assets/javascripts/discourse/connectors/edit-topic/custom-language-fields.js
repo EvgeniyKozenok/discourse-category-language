@@ -5,9 +5,9 @@ import { ajax } from "discourse/lib/ajax";
 
 export default class CustomLanguageFields extends Component {
   @tracked availableTopics = [];
-  @tracked selectedTopic = null;      // для одиночного селекта
-  @tracked selectedTopics = [];       // для мультиселекта
-  @tracked isAlternates = true;       // по умолчанию
+  @tracked selectedTopic = null;      // одиночный селект
+  @tracked selectedTopics = [];       // мультиселект
+  @tracked isAlternates = true;
 
   constructor() {
     super(...arguments);
@@ -23,51 +23,89 @@ export default class CustomLanguageFields extends Component {
         data: { q: query }
       });
 
-      this.availableTopics = data.topics || [];
-      this.isAlternates = data.is_alternates;
+      this.updateFromResponse(data);
 
-      // Подставляем текущие значения из buffered
-      const current = this.args.buffered?.topic_alternates || [];
-
-      if (this.isAlternates) {
-        // мультиселект — массив
-        this.selectedTopics = this.availableTopics.filter(t => current.includes(t.value));
-      } else {
-        // одиночный селект — первый id
-        const selectedId = current[0] || null;
-        this.selectedTopic = this.availableTopics.find(t => t.value === selectedId) || null;
-      }
     } catch (e) {
       console.error("Failed to load alternates", e);
+      this.clearState();
     }
-    console.log("this.availableTopics ", this.availableTopics);
-    console.log("this.selectedTopics ", this.selectedTopics);
-    console.log("this.selectedTopic ", this.selectedTopic);
-    console.log("this.isAlternates ", this.isAlternates);
+  }
+
+  @action
+  async onChangeTopic(selected) {
+    this.selectedTopic = selected;
+    const topicId = this.args.buffered?.get?.("id");
+    if (!topicId || !selected) return;
+
+    try {
+      const data = await ajax(`/admin/discourse-category-language/topics/${topicId}/${selected}/assign_default`, {
+        method: "PATCH",
+      });
+
+      this.updateFromResponse(data);
+
+    } catch (e) {
+      console.error("Failed to assign default topic", e);
+      this.clearState();
+    }
   }
 
   @action
   searchTopics(query) {
-    // ComboBox передает введенный текст
     this.loadAlternates(query);
   }
 
   @action
   onChangeTopics(selectedArray) {
-    // мультиселект возвращает массив объектов
     this.selectedTopics = selectedArray;
     const ids = selectedArray.map(t => t.value);
     console.log("onChangeTopics", ids);
     return;
-    this.args.buffered.set("topic_alternates", ids);
   }
 
-  @action
-  onChangeTopic(selected) {
-    // одиночный селект возвращает объект
-    this.selectedTopic = selected;
-    console.log("onChangeTopic", selected);
-    return;
-    this.args.buffered.set("topic_alternates", selected ? [selected.value] : []);
+  // --- вспомогательные методы ---
+
+  updateFromResponse(data) {
+    // availableTopics
+    const topicsChanged = !this.arraysEqual(
+      this.availableTopics.map(t => t.value),
+      (data.topics || []).map(t => t.value)
+    );
+    if (topicsChanged) {
+      this.availableTopics = data.topics || [];
+    }
+
+    // isAlternates
+    if (this.isAlternates !== data.is_alternates) {
+      this.isAlternates = data.is_alternates;
+    }
+
+    // selectedTopics
+    const selectedTopicsIds = (data.selected_topics || []).map(t => t.value ?? t);
+    const currentSelectedIds = (this.selectedTopics || []).map(t => t.value ?? t);
+    if (!this.arraysEqual(currentSelectedIds, selectedTopicsIds)) {
+      this.selectedTopics = data.selected_topics || [];
+    }
+
+    // selectedTopic
+    const selectedTopicId = data.selected_topic ?? null;
+    if ((this.selectedTopic?.value ?? null) !== selectedTopicId) {
+      this.selectedTopic = this.availableTopics.find(t => t.value === selectedTopicId) || null;
+    }
+  }
+
+  clearState() {
+    this.availableTopics = [];
+    this.selectedTopic = null;
+    this.selectedTopics = [];
+    this.isAlternates = true;
+  }
+
+  arraysEqual(a, b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
   }
 }

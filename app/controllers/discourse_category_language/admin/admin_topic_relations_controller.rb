@@ -29,10 +29,8 @@ module DiscourseCategoryLanguage
 
         # Фильтр по категориям
         if is_alternates
-          # мультиселект → только категории с не-дефолтным языком
           topics_scope = topics_scope.where(category_id: non_default_category_ids)
         else
-          # одиночный селект → дефолтные или без языка
           topics_scope = topics_scope.where.not(category_id: non_default_category_ids)
         end
 
@@ -42,23 +40,72 @@ module DiscourseCategoryLanguage
         # Лимит
         topics_scope = topics_scope.limit(50)
 
-        # Форматируем ответ
         formatted = topics_scope.includes(:category).map do |t|
           cat = t.category
-
           lang_id = category_language_id(cat)
-          raw_lang_id = cat.custom_fields["language_id"] # @todo: remove
           lang = DiscourseCategoryLanguage::Language.find_by(id: lang_id)
-          lang_slug = lang&.slug
-
           {
             value: t.id,
-            label: "#{t.id}: #{t.title} (#{cat.id}: #{cat.name} [#{lang_id}: #{lang_slug}, #{raw_lang_id.to_i}])",
+            label: "#{t.id}: #{t.title} (#{cat.id}: #{cat.name} [#{lang_id}: #{lang&.slug}])",
             disabled: false
           }
         end
 
-        render json: { topics: formatted, is_alternates: is_alternates }
+        # Определяем текущие выбранные топики
+        if is_alternates
+          selected_topics = Array(topic.custom_fields["topic_alternates"]).map(&:to_i)
+          selected_topic = nil
+        else
+          selected_topics = []
+          selected_topic = topic.custom_fields["x_defaults"]&.to_i
+        end
+
+        render json: {
+          topics: formatted,
+          is_alternates: is_alternates,
+          selected_topics: selected_topics,
+          selected_topic: selected_topic
+        }
+      end
+
+      # PATCH /admin/discourse-category-language/topics/:id/:x_default/assign_default
+      # Для одиночного селекта (isAlternates === false)
+      def assign_default
+        topic = Topic.find_by(id: params[:id])
+        raise Discourse::NotFound unless topic
+
+        parent_id = params[:x_default].to_i > 0 ? params[:x_default].to_i : nil
+
+        ActiveRecord::Base.transaction do
+          topic.custom_fields["x_defaults"] = parent_id
+          topic.save_custom_fields
+
+          if parent_id
+            parent = Topic.find_by(id: parent_id)
+            if parent
+              current_alts = Array(parent.custom_fields["alternates"]).map(&:to_i)
+              unless current_alts.include?(topic.id)
+                current_alts << topic.id
+                parent.custom_fields["alternates"] = current_alts
+                parent.save_custom_fields
+              end
+
+              # Удаляем текущий топик из alternates других родителей
+              Topic.where.not(id: parent.id).find_each do |other|
+                next if other.custom_fields["alternates"].blank?
+                other_alts = Array(other.custom_fields["alternates"]).map(&:to_i)
+                if other_alts.include?(topic.id)
+                  other_alts.delete(topic.id)
+                  other.custom_fields["alternates"] = other_alts
+                  other.save_custom_fields
+                end
+              end
+            end
+          end
+        end
+
+        # Возвращаем унифицированный респонс для фронта
+        alternates
       end
 
       private
