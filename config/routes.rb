@@ -8,6 +8,9 @@ DiscourseCategoryLanguage::Engine.routes.draw do
   post "/" => "admin/admin_category_language#create"
   patch "/:id" => "admin/admin_category_language#update"
   delete "/:id" => "admin/admin_category_language#destroy"
+
+  get "/categories" => "admin/admin_category_relations#index"
+  patch "/categories/:id" => "admin/admin_category_relations#update"
 end
 
 Discourse::Application.routes.draw do
