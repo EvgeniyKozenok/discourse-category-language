@@ -5,8 +5,8 @@ import { ajax } from "discourse/lib/ajax";
 
 export default class CustomLanguageFields extends Component {
   @tracked availableTopics = [];
-  @tracked selectedTopic = null;      // одиночный селект
-  @tracked selectedTopics = [];       // мультиселект
+  @tracked selectedTopic = null; // одиночный селект
+  @tracked selectedTopics = []; // мультиселект
   @tracked isAlternates = true;
 
   constructor() {
@@ -19,9 +19,12 @@ export default class CustomLanguageFields extends Component {
     if (!topicId) return;
 
     try {
-      const data = await ajax(`/admin/discourse-category-language/topics/${topicId}/alternates`, {
-        data: { q: query }
-      });
+      const data = await ajax(
+        `/admin/discourse-category-language/topics/${topicId}/alternates`,
+        {
+          data: { q: query },
+        }
+      );
 
       this.updateFromResponse(data);
 
@@ -41,12 +44,14 @@ export default class CustomLanguageFields extends Component {
     if (!topicId || !selected) return;
 
     try {
-      const data = await ajax(`/admin/discourse-category-language/topics/${topicId}/${selected}/assign_default`, {
-        method: "PATCH",
-      });
+      const data = await ajax(
+        `/admin/discourse-category-language/topics/${topicId}/${selected}/assign_default`,
+        {
+          method: "PATCH",
+        }
+      );
 
       this.updateFromResponse(data);
-
     } catch (e) {
       console.error("Failed to assign default topic", e);
       this.clearState();
@@ -67,10 +72,13 @@ export default class CustomLanguageFields extends Component {
     if (!topicId) return;
 
     try {
-      const response = await ajax(`/admin/discourse-category-language/topics/${topicId}/alternates_update`, {
-        type: "PATCH",
-        data: { alternates: alternates },
-      });
+      const response = await ajax(
+        `/admin/discourse-category-language/topics/${topicId}/alternates_update`,
+        {
+          type: "PATCH",
+          data: { alternates: alternates },
+        }
+      );
 
       this.updateFromResponse(response);
     } catch (err) {
@@ -79,14 +87,13 @@ export default class CustomLanguageFields extends Component {
     }
   }
 
-
   // --- вспомогательные методы ---
 
   updateFromResponse(data) {
     // availableTopics
     const topicsChanged = !this.arraysEqual(
-      this.availableTopics.map(t => t.value),
-      (data.topics || []).map(t => t.value)
+      this.availableTopics.map((t) => t.value),
+      (data.topics || []).map((t) => t.value)
     );
     if (topicsChanged) {
       this.availableTopics = data.topics || [];
@@ -98,8 +105,12 @@ export default class CustomLanguageFields extends Component {
     }
 
     // selectedTopics
-    const selectedTopicsIds = (data.selected_topics || []).map(t => t.value ?? t);
-    const currentSelectedIds = (this.selectedTopics || []).map(t => t.value ?? t);
+    const selectedTopicsIds = (data.selected_topics || []).map(
+      (t) => t.value ?? t
+    );
+    const currentSelectedIds = (this.selectedTopics || []).map(
+      (t) => t.value ?? t
+    );
     if (!this.arraysEqual(currentSelectedIds, selectedTopicsIds)) {
       this.selectedTopics = data.selected_topics || [];
     }
@@ -107,7 +118,8 @@ export default class CustomLanguageFields extends Component {
     // selectedTopic
     const selectedTopicId = data.selected_topic ?? null;
     if ((this.selectedTopic?.value ?? null) !== selectedTopicId) {
-      this.selectedTopic = this.availableTopics.find(t => t.value === selectedTopicId) || null;
+      this.selectedTopic =
+        this.availableTopics.find((t) => t.value === selectedTopicId) || null;
     }
   }
 

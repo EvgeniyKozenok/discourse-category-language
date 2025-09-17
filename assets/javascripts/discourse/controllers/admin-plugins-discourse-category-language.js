@@ -44,14 +44,17 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
   @action
   async deleteLanguage(language) {
     const confirmed = window.confirm(
-      I18n.t("js.discourse_category_language.confirm_delete", { name: language.name })
+      I18n.t("js.discourse_category_language.confirm_delete", {
+        name: language.name,
+      })
     );
 
     if (!confirmed) {
       return;
     }
 
-    const DEFAULT_LANGUAGE_ID = this.siteSettings.discourse_category_language_default_id;
+    const DEFAULT_LANGUAGE_ID =
+      this.siteSettings.discourse_category_language_default_id;
     if (language.id === DEFAULT_LANGUAGE_ID) {
       console.warn("Cannot delete default language.");
       return;
@@ -80,7 +83,9 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
     }
 
     const slugExists = this.languages.some(
-      (l) => l.slug === this.newLanguageSlug && (!this.editingLanguage || l.id !== this.editingLanguage.id)
+      (l) =>
+        l.slug === this.newLanguageSlug &&
+        (!this.editingLanguage || l.id !== this.editingLanguage.id)
     );
     if (slugExists) {
       alert(I18n.t("js.discourse_category_language.slug_exists"));
@@ -89,10 +94,18 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
 
     try {
       if (this.editingLanguage) {
-        const response = await ajax(`/admin/discourse-category-language/${this.editingLanguage.id}`, {
-          type: "PATCH",
-          data: { language: { name: this.newLanguageName, slug: this.newLanguageSlug } },
-        });
+        const response = await ajax(
+          `/admin/discourse-category-language/${this.editingLanguage.id}`,
+          {
+            type: "PATCH",
+            data: {
+              language: {
+                name: this.newLanguageName,
+                slug: this.newLanguageSlug,
+              },
+            },
+          }
+        );
 
         this.languages = this.languages.map((l) =>
           l.id === this.editingLanguage.id ? response.language : l
@@ -100,7 +113,12 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
       } else {
         const response = await ajax("/admin/discourse-category-language", {
           type: "POST",
-          data: { language: { name: this.newLanguageName, slug: this.newLanguageSlug } },
+          data: {
+            language: {
+              name: this.newLanguageName,
+              slug: this.newLanguageSlug,
+            },
+          },
         });
         this.languages = [...this.languages, response.language];
       }

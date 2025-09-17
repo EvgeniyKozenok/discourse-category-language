@@ -142,7 +142,7 @@ module DiscourseCategoryLanguage
             parent = Topic.find_by(id: parent_id)
             if parent
               current_alts = Array(parent.custom_fields["alternates"]).map(&:to_i)
-              unless current_alts.include?(topic.id)
+              if current_alts.exclude?(topic.id)
                 current_alts << topic.id
                 parent.custom_fields["alternates"] = current_alts
                 parent.save_custom_fields

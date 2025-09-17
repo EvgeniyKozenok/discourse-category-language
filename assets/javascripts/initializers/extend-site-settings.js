@@ -7,11 +7,15 @@ export default {
     withPluginApi("1.8.0", (api) => {
       const siteSettings = api.container.lookup("service:site-settings");
 
-      Object.defineProperty(siteSettings, "discourse_category_language_default_id", {
-        get() {
-          return Site.current().discourse_category_language_default_id;
-        },
-      });
+      Object.defineProperty(
+        siteSettings,
+        "discourse_category_language_default_id",
+        {
+          get() {
+            return Site.current().discourse_category_language_default_id;
+          },
+        }
+      );
     });
   },
 };

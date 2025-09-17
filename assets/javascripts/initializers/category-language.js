@@ -24,7 +24,9 @@ export default {
           return;
         }
 
-        document.querySelectorAll('link[rel="alternate"]').forEach(el => el.remove());
+        document
+          .querySelectorAll('link[rel="alternate"]')
+          .forEach((el) => el.remove());
         Object.entries(alternates).forEach(([lang, url]) => {
           const link = document.createElement("link");
           link.rel = "alternate";

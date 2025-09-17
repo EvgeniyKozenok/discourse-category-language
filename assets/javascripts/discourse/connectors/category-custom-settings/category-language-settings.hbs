@@ -1,34 +1,36 @@
-<section class="field">
-  <label>{{this.languageLabel}}</label>
-  <ComboBox
-    @content={{this.availableLanguages}}
-    @value={{this.selectedLanguage.value}}
-    @valueProperty="value"
-    @nameProperty="label"
-    @onChange={{this.onChange}}
-  />
-</section>
-
-{{#if this.isDefaultLanguage}}
+<template>
   <section class="field">
-    <label>{{this.alternatesLabel}}</label>
-    <MultiSelect
-      @content={{this.availableCategories}}
-      @value={{this.selectedAlternates}}
-      @onChange={{this.onChangeAlternates}}
-      @valueProperty="value"
-      @nameProperty="label"
-    />
-  </section>
-{{else}}
-  <section class="field">
-    <label>{{this.defaultCategoryLabel}}</label>
+    <label>{{this.languageLabel}}</label>
     <ComboBox
-      @content={{this.availableCategories}}
-      @value={{this.selectedDefaultCategory.value}}
+      @content={{this.availableLanguages}}
+      @value={{this.selectedLanguage.value}}
       @valueProperty="value"
       @nameProperty="label"
-      @onChange={{this.onChangeAlternates}}
+      @onChange={{this.onChange}}
     />
   </section>
-{{/if}}
+
+  {{#if this.isDefaultLanguage}}
+    <section class="field">
+      <label>{{this.alternatesLabel}}</label>
+      <MultiSelect
+        @content={{this.availableCategories}}
+        @value={{this.selectedAlternates}}
+        @onChange={{this.onChangeAlternates}}
+        @valueProperty="value"
+        @nameProperty="label"
+      />
+    </section>
+  {{else}}
+    <section class="field">
+      <label>{{this.defaultCategoryLabel}}</label>
+      <ComboBox
+        @content={{this.availableCategories}}
+        @value={{this.selectedDefaultCategory.value}}
+        @valueProperty="value"
+        @nameProperty="label"
+        @onChange={{this.onChangeAlternates}}
+      />
+    </section>
+  {{/if}}
+</template>
