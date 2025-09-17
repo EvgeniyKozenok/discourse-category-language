@@ -1,5 +1,5 @@
-# lib/discourse_category_language/engine.rb
 # frozen_string_literal: true
+# lib/discourse_category_language/engine.rb
 
 module ::DiscourseCategoryLanguage
   class Engine < ::Rails::Engine

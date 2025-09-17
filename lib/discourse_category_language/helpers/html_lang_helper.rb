@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # lib/discourse_category_language/helpers/html_lang_helper.rb
 
 module ::DiscourseCategoryLanguage::Helpers

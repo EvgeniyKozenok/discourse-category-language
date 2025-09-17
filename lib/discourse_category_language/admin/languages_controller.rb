@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # lib/discourse_category_language/admin/languages_controller.rb
 
 module DiscourseCategoryLanguage

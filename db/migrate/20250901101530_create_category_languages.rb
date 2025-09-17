@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # db/migrate/20250901101530_create_category_languages.rb
 class CreateCategoryLanguages < ActiveRecord::Migration[6.1]
   def change

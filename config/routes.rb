@@ -1,5 +1,5 @@
-# config/routes.rb
 # frozen_string_literal: true
+# # config/routes.rb
 
 DiscourseCategoryLanguage::Engine.routes.draw do
   get "/" => "/admin/plugins#index"

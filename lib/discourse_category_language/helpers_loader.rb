@@ -1,5 +1,6 @@
-# lib/discourse_category_language/helpers_loader.rb
 # frozen_string_literal: true
+# lib/discourse_category_language/helpers_loader.rb
+
 module ::DiscourseCategoryLanguage
   class HelpersLoader
     def self.prepend_helpers

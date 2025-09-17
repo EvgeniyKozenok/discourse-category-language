@@ -1,6 +1,6 @@
+# frozen_string_literal: true
 # lib/discourse_category_language/patches/application_controller_skip_skeleton.rb
 
-# frozen_string_literal: true
 module ::DiscourseCategoryLanguage
   module ApplicationControllerSkipSkeleton
     def render(*args, **kwargs, &block)

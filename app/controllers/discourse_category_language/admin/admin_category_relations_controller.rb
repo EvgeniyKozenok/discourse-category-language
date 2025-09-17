@@ -1,5 +1,5 @@
-# app/controllers/discourse_category_language/admin/admin_category_relations_controller.rb
 # frozen_string_literal: true
+# app/controllers/discourse_category_language/admin/admin_category_relations_controller.rb
 
 module DiscourseCategoryLanguage
   module Admin

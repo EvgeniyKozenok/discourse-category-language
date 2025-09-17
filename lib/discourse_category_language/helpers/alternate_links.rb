@@ -1,4 +1,5 @@
-# lib/discourse_category_language/helpers/alternate_links.rb
+# frozen_string_literal: true
+# # lib/discourse_category_language/helpers/alternate_links.rb
 
 require_dependency File.expand_path("category_lookup", __dir__)
 

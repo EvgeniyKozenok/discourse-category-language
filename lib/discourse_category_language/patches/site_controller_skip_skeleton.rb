@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # lib/discourse_category_language/patches/site_controller_skip_skeleton.rb
 
 module ::DiscourseCategoryLanguage

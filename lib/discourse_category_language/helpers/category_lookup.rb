@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # lib/discourse_category_language/helpers/category_lookup.rb
 module ::DiscourseCategoryLanguage::Helpers
   module CategoryLookup

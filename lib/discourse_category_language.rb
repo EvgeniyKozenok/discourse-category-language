@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # lib/discourse_category_language.rb
 module ::DiscourseCategoryLanguage
   PLUGIN_NAME = "discourse-category-language"
