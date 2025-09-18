@@ -1,7 +1,8 @@
+{{! template-lint-disable require-strict-mode }}
 <div class="discourse-category-language-container p-8">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold">{{i18n "admin.title_management"}}</h1>
-    <button class="btn btn-primary" {{action "addLanguage"}}>
+    <button type="button" class="btn btn-primary" {{action "addLanguage"}}>
       {{i18n "admin.add_language_button"}}
     </button>
   </div>
@@ -20,10 +21,10 @@
           <td class="px-4 py-2">{{language.name}}</td>
           <td class="px-4 py-2">{{language.slug}}</td>
           <td class="px-4 py-2 text-right">
-            <button class="btn btn-icon" {{action "editLanguage" language}}>
+            <button type="button" class="btn btn-icon" {{action "editLanguage" language}}>
               <svg class="fa d-icon d-icon-pencil svg-icon svg-string" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#pencil"></use></svg>
             </button>
-            <button class="btn btn-icon" {{action "deleteLanguage" language}} disabled={{eq language.id 1}}>
+            <button type="button" class="btn btn-icon" {{action "deleteLanguage" language}} disabled={{eq language.id 1}}>
               <svg class="fa d-icon d-icon-trash-can svg-icon svg-string" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#trash-can"></use></svg>
             </button>
           </td>
