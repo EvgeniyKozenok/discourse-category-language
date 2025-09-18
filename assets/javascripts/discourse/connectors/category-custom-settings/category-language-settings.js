@@ -2,9 +2,9 @@
 import Component from "@ember/component";
 import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
-import { inject as service } from "@ember/service";
+import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
-import I18n from "I18n";
+import I18n from "discourse-i18n";
 
 export default class CategoryLanguageSettings extends Component {
   @service siteSettings;
@@ -56,7 +56,7 @@ export default class CategoryLanguageSettings extends Component {
           (l) => +l.value === this.intDefaultLanguageId
         );
     } catch (err) {
-      console.error("loadLanguages error", err);
+      // no-console: Removed console statement
       this.availableLanguages = [];
       this.selectedLanguage = null;
     }
@@ -91,7 +91,9 @@ export default class CategoryLanguageSettings extends Component {
       // map to format { label, value, disabled }
       const prepared = candidates.map((c) => {
         let disabled = false;
-        if (this.isDefaultLanguage && c.x_defaults) disabled = true;
+        if (this.isDefaultLanguage && c.x_defaults) {
+          disabled = true;
+        }
 
         // insert language tag (name [slug])
         const lang = this.availableLanguages.find(
@@ -161,16 +163,16 @@ export default class CategoryLanguageSettings extends Component {
         this.selectedAlternates = [];
       }
     } catch (err) {
-      console.error("loadRelations error", err);
+      // console.error("loadRelations error", err);
       this.availableCategories = [];
       this.selectedAlternates = [];
       this.selectedDefaultCategory = null;
     }
 
     // debug
-    console.log("availableCategories:", this.availableCategories);
-    console.log("selectedAlternates (ids):", this.selectedAlternates);
-    console.log("selectedDefaultCategory (id):", this.selectedDefaultCategory);
+    // console.log("availableCategories:", this.availableCategories);
+    // console.log("selectedAlternates (ids):", this.selectedAlternates);
+    // console.log("selectedDefaultCategory (id):", this.selectedDefaultCategory);
   }
 
   // --- Saving alternates / x_defaults ---
@@ -188,12 +190,12 @@ export default class CategoryLanguageSettings extends Component {
       data.alternates = [];
     }
 
-    console.log(
-      "Saving category relations:",
-      data,
-      "for category",
-      this.category.id
-    );
+    //console.log(
+    //  "Saving category relations:",
+    //  data,
+    //  "for category",
+    //  this.category.id
+    //);
 
     try {
       const response = await ajax(
@@ -213,7 +215,7 @@ export default class CategoryLanguageSettings extends Component {
       // Restarting connections (and UI)
       await this.loadRelations();
     } catch (err) {
-      console.error("Error saving category relations:", err);
+      //  console.error("Error saving category relations:", err);
     }
   }
 
@@ -235,7 +237,9 @@ export default class CategoryLanguageSettings extends Component {
             name: lang ? lang.label : newLanguageId,
           })
         );
-        if (!confirmed) return;
+        if (!confirmed) {
+          return;
+        }
 
         // Resetting connections for the current category (the server will disable the rest)
         await ajax(
@@ -266,7 +270,7 @@ export default class CategoryLanguageSettings extends Component {
       // Let's update the UI
       await this.loadRelations();
     } catch (err) {
-      console.error("Error saving language:", err);
+      // console.error("Error saving language:", err);
     }
   }
 }
