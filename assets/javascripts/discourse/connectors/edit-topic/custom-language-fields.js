@@ -1,7 +1,8 @@
 import Component from "@glimmer/component";
-import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
+import { action } from "@ember/object";
 import { ajax } from "discourse/lib/ajax";
+import { popupAjaxError } from "discourse/lib/ajax-error";
 
 export default class CustomLanguageFields extends Component {
   @tracked availableTopics = [];
@@ -16,7 +17,7 @@ export default class CustomLanguageFields extends Component {
 
   async loadAlternates(query = "") {
     const topicId = this.args.buffered?.get?.("id");
-    if (!topicId) return;
+    if (!topicId) {return;}
 
     try {
       const data = await ajax(
@@ -28,11 +29,17 @@ export default class CustomLanguageFields extends Component {
 
       this.updateFromResponse(data);
 
-      console.log(" this.isAlternates = ", this.isAlternates);
-      console.log(" this.selectedTopics: ", this.selectedTopics);
-      console.log(" data: ", data);
+      //console.log(" this.isAlternates = ", this.isAlternates);
+      //console.log(" this.selectedTopics: ", this.selectedTopics);
+      //console.log(" data: ", data);
     } catch (e) {
-      console.error("Failed to load alternates", e);
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: ["Failed to load alternates: " + e.message],
+          },
+        },
+      });
       this.clearState();
     }
   }
@@ -41,7 +48,7 @@ export default class CustomLanguageFields extends Component {
   async onChangeTopic(selected) {
     this.selectedTopic = selected;
     const topicId = this.args.buffered?.get?.("id");
-    if (!topicId || !selected) return;
+    if (!topicId || !selected) {return;}
 
     try {
       const data = await ajax(
@@ -53,7 +60,13 @@ export default class CustomLanguageFields extends Component {
 
       this.updateFromResponse(data);
     } catch (e) {
-      console.error("Failed to assign default topic", e);
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: ["Failed to assign default topic: " + e.message],
+          },
+        },
+      });
       this.clearState();
     }
   }
@@ -69,20 +82,26 @@ export default class CustomLanguageFields extends Component {
 
     const topicId = this.args.buffered?.get?.("id");
 
-    if (!topicId) return;
+    if (!topicId) {return;}
 
     try {
       const response = await ajax(
         `/admin/discourse-category-language/topics/${topicId}/alternates_update`,
         {
           type: "PATCH",
-          data: { alternates: alternates },
+          data: { alternates },
         }
       );
 
       this.updateFromResponse(response);
     } catch (err) {
-      console.error("Failed to update alternates", err);
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: ["Failed to update alternates: " + err.message],
+          },
+        },
+      });
       this.clearState();
     }
   }
@@ -129,9 +148,9 @@ export default class CustomLanguageFields extends Component {
   }
 
   arraysEqual(a, b) {
-    if (a.length !== b.length) return false;
+    if (a.length !== b.length) {return false;}
     for (let i = 0; i < a.length; i++) {
-      if (a[i] !== b[i]) return false;
+      if (a[i] !== b[i]) {return false;}
     }
     return true;
   }

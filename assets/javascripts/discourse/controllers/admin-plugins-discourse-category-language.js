@@ -1,8 +1,11 @@
 // assets/javascripts/discourse/controllers/admin-plugins-discourse-category-language.js
-import Controller from "@ember/controller";
 import { tracked } from "@glimmer/tracking";
+import Controller from "@ember/controller";
 import { action } from "@ember/object";
 import { ajax } from "discourse/lib/ajax";
+import { popupAjaxError } from "discourse/lib/ajax-error";
+import showConfirmModal from "discourse/lib/show-confirm-modal";
+import { i18n } from "discourse-i18n";
 
 export default class AdminPluginsDiscourseCategoryLanguageController extends Controller {
   @tracked languages = [];
@@ -17,12 +20,8 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
   }
 
   async loadLanguages() {
-    try {
-      const response = await ajax("/admin/discourse-category-language/list");
-      this.languages = response.languages;
-    } catch (err) {
-      console.error("Error loading languages:", err);
-    }
+    const response = await ajax("/admin/discourse-category-language/list");
+    this.languages = response.languages;
   }
 
   @action
@@ -43,11 +42,11 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
 
   @action
   async deleteLanguage(language) {
-    const confirmed = window.confirm(
-      I18n.t("js.discourse_category_language.confirm_delete", {
+    const confirmed = await showConfirmModal({
+      title: i18n("js.discourse_category_language.confirm_delete", {
         name: language.name,
-      })
-    );
+      }),
+    });
 
     if (!confirmed) {
       return;
@@ -56,7 +55,13 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
     const DEFAULT_LANGUAGE_ID =
       this.siteSettings.discourse_category_language_default_id;
     if (language.id === DEFAULT_LANGUAGE_ID) {
-      console.warn("Cannot delete default language.");
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: ["Cannot delete default language."],
+          },
+        },
+      });
       return;
     }
 
@@ -66,7 +71,13 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
       });
       this.languages = this.languages.filter((l) => l.id !== language.id);
     } catch (err) {
-      console.error("Error delete language:", err);
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: ["Error delete language:" + err.message],
+          },
+        },
+      });
     }
   }
 
@@ -78,7 +89,13 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
   @action
   async saveLanguage() {
     if (!this.newLanguageName || !this.newLanguageSlug) {
-      alert(I18n.t("js.discourse_category_language.name_slug_required"));
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: [i18n("js.discourse_category_language.name_slug_required")],
+          },
+        },
+      });
       return;
     }
 
@@ -88,7 +105,13 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
         (!this.editingLanguage || l.id !== this.editingLanguage.id)
     );
     if (slugExists) {
-      alert(I18n.t("js.discourse_category_language.slug_exists"));
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: [i18n("js.discourse_category_language.slug_exists")],
+          },
+        },
+      });
       return;
     }
 
@@ -125,7 +148,13 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
 
       this.showModal = false;
     } catch (err) {
-      console.error("Error saving language:", err);
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: ["Error saving language: " + err.message],
+          },
+        },
+      });
     }
   }
 }

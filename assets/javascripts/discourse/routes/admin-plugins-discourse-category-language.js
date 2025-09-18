@@ -8,7 +8,6 @@ export default class AdminPluginsDiscourseCategoryLanguageRoute extends Route {
       const response = await ajax("/admin/discourse-category-language/list");
       return response.languages;
     } catch (error) {
-      console.error("Error saving language:", error);
       popupAjaxError(error);
       return [];
     }

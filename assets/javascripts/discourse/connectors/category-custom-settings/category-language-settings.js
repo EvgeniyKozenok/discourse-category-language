@@ -1,10 +1,12 @@
 // assets/javascripts/discourse/connectors/category-custom-settings/category-language-settings.js
-import Component from "@ember/component";
 import { tracked } from "@glimmer/tracking";
+import Component from "@ember/component";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
-import I18n from "discourse-i18n";
+import { popupAjaxError } from "discourse/lib/ajax-error";
+import showConfirmModal from "discourse/lib/show-confirm-modal";
+import { i18n } from "discourse-i18n";
 
 export default class CategoryLanguageSettings extends Component {
   @service siteSettings;
@@ -15,9 +17,9 @@ export default class CategoryLanguageSettings extends Component {
   @tracked selectedAlternates = []; // array id (numbers)
   @tracked selectedDefaultCategory = null; // id (number) or null
 
-  languageLabel = I18n.t("discourse_category_language.label");
-  alternatesLabel = I18n.t("discourse_category_language.alternates_label");
-  defaultCategoryLabel = I18n.t("discourse_category_language.default_label");
+  languageLabel = i18n("discourse_category_language.label");
+  alternatesLabel = i18n("discourse_category_language.alternates_label");
+  defaultCategoryLabel = i18n("discourse_category_language.default_label");
 
   constructor() {
     super(...arguments);
@@ -56,7 +58,7 @@ export default class CategoryLanguageSettings extends Component {
           (l) => +l.value === this.intDefaultLanguageId
         );
     } catch (err) {
-      // no-console: Removed console statement
+      popupAjaxError(err);
       this.availableLanguages = [];
       this.selectedLanguage = null;
     }
@@ -163,6 +165,8 @@ export default class CategoryLanguageSettings extends Component {
         this.selectedAlternates = [];
       }
     } catch (err) {
+
+      popupAjaxError(err);
       // console.error("loadRelations error", err);
       this.availableCategories = [];
       this.selectedAlternates = [];
@@ -215,7 +219,13 @@ export default class CategoryLanguageSettings extends Component {
       // Restarting connections (and UI)
       await this.loadRelations();
     } catch (err) {
-      //  console.error("Error saving category relations:", err);
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: ["Error saving category relations: " + err.message],
+          },
+        },
+      });
     }
   }
 
@@ -232,11 +242,11 @@ export default class CategoryLanguageSettings extends Component {
         const lang = this.availableLanguages.find(
           (l) => +l.value === +newLanguageId
         );
-        const confirmed = window.confirm(
-          I18n.t("js.discourse_category_language.confirm_language_change", {
+        const confirmed = await showConfirmModal({
+          title: i18n("s.discourse_category_language.confirm_language_change", {
             name: lang ? lang.label : newLanguageId,
-          })
-        );
+          }),
+        });
         if (!confirmed) {
           return;
         }
@@ -270,7 +280,13 @@ export default class CategoryLanguageSettings extends Component {
       // Let's update the UI
       await this.loadRelations();
     } catch (err) {
-      // console.error("Error saving language:", err);
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: ["Error saving language: " + err.message],
+          },
+        },
+      });
     }
   }
 }

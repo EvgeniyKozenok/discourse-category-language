@@ -1,6 +1,6 @@
 // assets/javascripts/initializers/category-language.js
-import { withPluginApi } from "discourse/lib/plugin-api";
 import { ajax } from "discourse/lib/ajax";
+import { withPluginApi } from "discourse/lib/plugin-api";
 
 export default {
   name: "category-language",
@@ -11,9 +11,9 @@ export default {
 
       function updateHtmlLang(slug) {
         const el = document.documentElement;
-        if (el.getAttribute("lang") === slug) return;
+        if (el.getAttribute("lang") === slug) {return;}
         el.setAttribute("lang", slug);
-        console.log("SPA lang updated:", slug);
+        // console.log("SPA lang updated:", slug);
       }
 
       function updateAlternateLinks(alternates) {
@@ -62,7 +62,7 @@ export default {
 
       api.onPageChange(async () => {
         const entity = getEntityFromUrl();
-        if (!entity) return;
+        if (!entity) {return;}
 
         const { entityId, entityType } = entity;
 
@@ -73,18 +73,14 @@ export default {
           return;
         }
 
-        try {
-          const { slug, alternates } = await ajax(
-            `/admin/discourse-category-language/spa-meta/${entityId}/${entityType}`
-          );
+        const { slug, alternates } = await ajax(
+          `/admin/discourse-category-language/spa-meta/${entityId}/${entityType}`
+        );
 
-          categoryCache.set(entityId, { slug, alternates });
+        categoryCache.set(entityId, { slug, alternates });
 
-          updateHtmlLang(slug);
-          updateAlternateLinks(alternates);
-        } catch (err) {
-          //console.warn("Failed to fetch SPA meta:", err);
-        }
+        updateHtmlLang(slug);
+        updateAlternateLinks(alternates);
       });
     });
   },
