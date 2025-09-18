@@ -17,7 +17,9 @@ export default class CustomLanguageFields extends Component {
 
   async loadAlternates(query = "") {
     const topicId = this.args.buffered?.get?.("id");
-    if (!topicId) {return;}
+    if (!topicId) {
+      return;
+    }
 
     try {
       const data = await ajax(
@@ -48,7 +50,9 @@ export default class CustomLanguageFields extends Component {
   async onChangeTopic(selected) {
     this.selectedTopic = selected;
     const topicId = this.args.buffered?.get?.("id");
-    if (!topicId || !selected) {return;}
+    if (!topicId || !selected) {
+      return;
+    }
 
     try {
       const data = await ajax(
@@ -82,7 +86,9 @@ export default class CustomLanguageFields extends Component {
 
     const topicId = this.args.buffered?.get?.("id");
 
-    if (!topicId) {return;}
+    if (!topicId) {
+      return;
+    }
 
     try {
       const response = await ajax(
@@ -148,9 +154,13 @@ export default class CustomLanguageFields extends Component {
   }
 
   arraysEqual(a, b) {
-    if (a.length !== b.length) {return false;}
+    if (a.length !== b.length) {
+      return false;
+    }
     for (let i = 0; i < a.length; i++) {
-      if (a[i] !== b[i]) {return false;}
+      if (a[i] !== b[i]) {
+        return false;
+      }
     }
     return true;
   }

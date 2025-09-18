@@ -11,7 +11,9 @@ export default {
 
       function updateHtmlLang(slug) {
         const el = document.documentElement;
-        if (el.getAttribute("lang") === slug) {return;}
+        if (el.getAttribute("lang") === slug) {
+          return;
+        }
         el.setAttribute("lang", slug);
         // console.log("SPA lang updated:", slug);
       }
@@ -62,7 +64,9 @@ export default {
 
       api.onPageChange(async () => {
         const entity = getEntityFromUrl();
-        if (!entity) {return;}
+        if (!entity) {
+          return;
+        }
 
         const { entityId, entityType } = entity;
 

@@ -165,7 +165,6 @@ export default class CategoryLanguageSettings extends Component {
         this.selectedAlternates = [];
       }
     } catch (err) {
-
       popupAjaxError(err);
       // console.error("loadRelations error", err);
       this.availableCategories = [];
