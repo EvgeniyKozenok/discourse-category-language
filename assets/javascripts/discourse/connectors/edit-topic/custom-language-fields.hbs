@@ -2,15 +2,15 @@
 <div class="custom-language-field-row">
   {{#if this.isAlternates}}
     <label class="custom-language-label">{{i18n "discourse_category_language.alternates_topic_label"}}</label>
-      <MultiSelect
-        @content={{this.availableTopics}}
-        @value={{this.selectedTopics}}
-        @onSearch={{this.searchTopics}}
-        @onChange={{this.onChangeTopics}}
-        @valueProperty="value"
-        @nameProperty="label"
-        @placeholder="Type to search..."
-      />
+    <MultiSelect
+      @content={{this.availableTopics}}
+      @value={{this.selectedTopics}}
+      @onSearch={{this.searchTopics}}
+      @onChange={{this.onChangeTopics}}
+      @valueProperty="value"
+      @nameProperty="label"
+      @placeholder="Type to search..."
+    />
   {{else}}
     <label class="custom-language-label">{{i18n "discourse_category_language.default_topic_label"}}</label>
     <ComboBox

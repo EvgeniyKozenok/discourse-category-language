@@ -21,11 +21,32 @@
           <td class="px-4 py-2">{{language.name}}</td>
           <td class="px-4 py-2">{{language.slug}}</td>
           <td class="px-4 py-2 text-right">
-            <button type="button" class="btn btn-icon" {{action "editLanguage" language}}>
-              <svg class="fa d-icon d-icon-pencil svg-icon svg-string" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#pencil"></use></svg>
+            <button
+              type="button"
+              class="btn btn-icon"
+              {{action "editLanguage" language}}
+            >
+              <svg
+                class="fa d-icon d-icon-pencil svg-icon svg-string"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <use href="#pencil"></use>
+              </svg>
             </button>
-            <button type="button" class="btn btn-icon" {{action "deleteLanguage" language}} disabled={{eq language.id 1}}>
-              <svg class="fa d-icon d-icon-trash-can svg-icon svg-string" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#trash-can"></use></svg>
+            <button
+              type="button"
+              class="btn btn-icon"
+              {{action "deleteLanguage" language}}
+              disabled={{eq language.id 1}}
+            >
+              <svg
+                class="fa d-icon d-icon-trash-can svg-icon svg-string"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <use href="#trash-can"></use>
+              </svg>
             </button>
           </td>
         </tr>
@@ -34,7 +55,10 @@
   </table>
 
   {{#if this.showModal}}
-    <DModal @title={{if this.editingLanguage (i18n "admin.edit_language_title") (i18n "admin.add_language_title")}} @close={{action "closeModal"}}>
+    <DModal
+      @title={{if this.editingLanguage (i18n "admin.edit_language_title") (i18n "admin.add_language_title")}}
+      @close={{action "closeModal"}}
+    >
       <div class="modal-body">
         <div class="form-group">
           <label>{{i18n "admin.name_header"}}</label>
