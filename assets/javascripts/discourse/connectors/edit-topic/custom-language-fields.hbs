@@ -1,9 +1,6 @@
-<template>
-  <div class="custom-language-field-row">
-    {{#if this.isAlternates}}
-      <label class="custom-language-label">{{i18n
-          "discourse_category_language.alternates_topic_label"
-        }}</label>
+<div class="custom-language-field-row">
+  {{#if this.isAlternates}}
+    <label class="custom-language-label">{{i18n "discourse_category_language.alternates_topic_label"}}</label>
       <MultiSelect
         @content={{this.availableTopics}}
         @value={{this.selectedTopics}}
@@ -13,20 +10,17 @@
         @nameProperty="label"
         @placeholder="Type to search..."
       />
-    {{else}}
-      <label class="custom-language-label">{{i18n
-          "discourse_category_language.default_topic_label"
-        }}</label>
-      <ComboBox
-        @content={{this.availableTopics}}
-        @value={{this.selectedTopic.value}}
-        @valueProperty="value"
-        @nameProperty="label"
-        @placeholder="Type to search..."
-        @onSearch={{this.searchTopics}}
-        @onChange={{this.onChangeTopic}}
-        @multiple={{false}}
-      />
-    {{/if}}
-  </div>
-</template>
+  {{else}}
+    <label class="custom-language-label">{{i18n "discourse_category_language.default_topic_label"}}</label>
+    <ComboBox
+      @content={{this.availableTopics}}
+      @value={{this.selectedTopic.value}}
+      @valueProperty="value"
+      @nameProperty="label"
+      @placeholder="Type to search..."
+      @onSearch={{this.searchTopics}}
+      @onChange={{this.onChangeTopic}}
+      @multiple={{false}}
+    />
+  {{/if}}
+</div>

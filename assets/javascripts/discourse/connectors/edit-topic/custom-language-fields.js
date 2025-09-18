@@ -5,8 +5,8 @@ import { ajax } from "discourse/lib/ajax";
 
 export default class CustomLanguageFields extends Component {
   @tracked availableTopics = [];
-  @tracked selectedTopic = null; // одиночный селект
-  @tracked selectedTopics = []; // мультиселект
+  @tracked selectedTopic = null;
+  @tracked selectedTopics = [];
   @tracked isAlternates = true;
 
   constructor() {
@@ -86,8 +86,6 @@ export default class CustomLanguageFields extends Component {
       this.clearState();
     }
   }
-
-  // --- вспомогательные методы ---
 
   updateFromResponse(data) {
     // availableTopics
