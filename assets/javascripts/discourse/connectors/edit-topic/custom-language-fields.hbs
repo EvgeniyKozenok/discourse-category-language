@@ -1,7 +1,9 @@
 {{! template-lint-disable require-strict-mode }}
 <div class="custom-language-field-row">
   {{#if this.isAlternates}}
-    <label class="custom-language-label">{{i18n "discourse_category_language.alternates_topic_label"}}</label>
+    <label class="custom-language-label">{{i18n
+        "discourse_category_language.alternates_topic_label"
+      }}</label>
     <MultiSelect
       @content={{this.availableTopics}}
       @value={{this.selectedTopics}}
@@ -12,7 +14,9 @@
       @placeholder="Type to search..."
     />
   {{else}}
-    <label class="custom-language-label">{{i18n "discourse_category_language.default_topic_label"}}</label>
+    <label class="custom-language-label">{{i18n
+        "discourse_category_language.default_topic_label"
+      }}</label>
     <ComboBox
       @content={{this.availableTopics}}
       @value={{this.selectedTopic.value}}

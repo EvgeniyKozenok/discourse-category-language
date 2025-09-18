@@ -10,9 +10,15 @@
   <table class="discourse-table w-full border-collapse">
     <thead>
       <tr class="bg-gray-100">
-        <th class="px-4 py-2 text-left text-gray-600">{{i18n "admin.name_header"}}</th>
-        <th class="px-4 py-2 text-left text-gray-600">{{i18n "admin.slug_header"}}</th>
-        <th class="px-4 py-2 text-right text-gray-600">{{i18n "admin.actions_header"}}</th>
+        <th class="px-4 py-2 text-left text-gray-600">{{i18n
+            "admin.name_header"
+          }}</th>
+        <th class="px-4 py-2 text-left text-gray-600">{{i18n
+            "admin.slug_header"
+          }}</th>
+        <th class="px-4 py-2 text-right text-gray-600">{{i18n
+            "admin.actions_header"
+          }}</th>
       </tr>
     </thead>
     <tbody>
@@ -56,7 +62,11 @@
 
   {{#if this.showModal}}
     <DModal
-      @title={{if this.editingLanguage (i18n "admin.edit_language_title") (i18n "admin.add_language_title")}}
+      @title={{if
+        this.editingLanguage
+        (i18n "admin.edit_language_title")
+        (i18n "admin.add_language_title")
+      }}
       @close={{action "closeModal"}}
     >
       <div class="modal-body">
@@ -66,7 +76,11 @@
         </div>
         <div class="form-group">
           <label>{{i18n "admin.slug_header"}}</label>
-          {{input value=this.newLanguageSlug class="form-control" disabled=this.editingLanguage}}
+          {{input
+            value=this.newLanguageSlug
+            class="form-control"
+            disabled=this.editingLanguage
+          }}
         </div>
       </div>
       <div class="modal-footer">
