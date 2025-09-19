@@ -10,7 +10,7 @@
   />
 </section>
 
-{{#if this.isDefaultLanguage}}
+{{#if this.isCategoryWithDefaultLanguage}}
   <section class="field">
     <label>{{this.alternatesLabel}}</label>
     <MultiSelect
@@ -26,7 +26,7 @@
     <label>{{this.defaultCategoryLabel}}</label>
     <ComboBox
       @content={{this.availableCategories}}
-      @value={{this.selectedDefaultCategory.value}}
+      @value={{this.selectedDefaultCategory}}
       @valueProperty="value"
       @nameProperty="label"
       @onChange={{this.onChangeAlternates}}

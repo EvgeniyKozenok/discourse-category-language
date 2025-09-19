@@ -9,7 +9,7 @@ DiscourseCategoryLanguage::Engine.routes.draw do
   patch "/:id" => "admin/admin_category_language#update"
   delete "/:id" => "admin/admin_category_language#destroy"
 
-  get "/categories" => "admin/admin_category_relations#index"
+  get "/categories/:id" => "admin/admin_category_relations#index"
   patch "/categories/:id" => "admin/admin_category_relations#update"
 
   get "/topics/:id/alternates" => "admin/admin_topic_relations#alternates"
