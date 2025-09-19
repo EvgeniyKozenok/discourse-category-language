@@ -44,7 +44,7 @@ module DiscourseCategoryLanguage
             default_category = Category.find_by(id: x_defaults)
             if default_category
               default_alts = Array(default_category.custom_fields["alternates"]).map(&:to_i)
-              unless default_alts.include?(category.id)
+              if default_alts.exclude?(category.id)
                 default_alts << category.id
                 default_category.custom_fields["alternates"] = default_alts
                 default_category.save_custom_fields

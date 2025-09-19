@@ -75,7 +75,7 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
             },
           });
         }
-      }
+      },
     });
   }
 

@@ -22,7 +22,7 @@ export default class CategoryLanguageSettings extends Component {
   defaultCategoryLabel = i18n("discourse_category_language.default_label");
 
   // --- Another private function to save language ---
-#saveChangeCategoryLanguage = async (newLanguageId) => {
+  #saveChangeCategoryLanguage = async (newLanguageId) => {
     // We save the language on the server (and get the updated language_id)
     try {
       const response = await ajax(
@@ -50,7 +50,7 @@ export default class CategoryLanguageSettings extends Component {
     await this.loadRelations();
   };
 
-#saveChangeCategoryLanguageAndClearOldRelations = async (newLanguageId) => {
+  #saveChangeCategoryLanguageAndClearOldRelations = async (newLanguageId) => {
     const lang = this.availableLanguages.find(
       (l) => +l.value === +newLanguageId
     );
@@ -84,11 +84,11 @@ export default class CategoryLanguageSettings extends Component {
         this.category.custom_fields.alternates = [];
 
         await this.#saveChangeCategoryLanguage(newLanguageId);
-      }
+      },
     });
   };
 
-constructor() {
+  constructor() {
     super(...arguments);
     this.loadRelations();
   }
