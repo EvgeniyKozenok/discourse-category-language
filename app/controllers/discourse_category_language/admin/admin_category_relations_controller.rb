@@ -28,41 +28,40 @@ module DiscourseCategoryLanguage
 
         # correct parsing of parameters (accounting for nil / "null" / strings)
         language_id = params.key?(:language_id) ? params[:language_id].to_i : nil
-        alternates = params.key?(:alternates) && params[:alternates].present? ? Array(params[:alternates]).map(&:to_i) : nil
-        x_defaults = params.key?(:x_defaults) && params[:x_defaults].present? ? params[:x_defaults].to_i : nil
+        alternates  = params.key?(:alternates) && params[:alternates].present? ? Array(params[:alternates]).map(&:to_i) : nil
+        x_defaults  = params.key?(:x_defaults) && params[:x_defaults].present? ? params[:x_defaults].to_i : nil
 
         ActiveRecord::Base.transaction do
-          # CASE: assign x_defaults (current non-default language category)
           if x_defaults
-            # Remove alternates from the current category (it is now a child)
+            #
+            # CASE 1: assign x_defaults (the current category becomes a child)
+            #
             category.custom_fields.delete("alternates")
             category.custom_fields["x_defaults"] = x_defaults
             category.save_custom_fields
 
-            # For parent (default language category), add the current category to its alternates
+            # Add a category to the default alts
             default_category = Category.find_by(id: x_defaults)
             if default_category
               default_alts = Array(default_category.custom_fields["alternates"]).map(&:to_i)
-              if default_alts.exclude?(category.id)
+              unless default_alts.include?(category.id)
                 default_alts << category.id
                 default_category.custom_fields["alternates"] = default_alts
                 default_category.save_custom_fields
               end
             end
 
-            # Remove the current category from alternates for all other categories
+            # remove the current category from other alts
             Category.where.not(id: [category.id, x_defaults]).find_each do |c|
               next if c.custom_fields["alternates"].blank?
               current_alts = Array(c.custom_fields["alternates"]).map(&:to_i)
-              if current_alts.include?(category.id)
-                current_alts.delete(category.id)
+              if current_alts.delete(category.id)
                 c.custom_fields["alternates"] = current_alts
                 c.save_custom_fields
               end
             end
 
-            #  If some categories had x_defaults pointing to the current one (i.e. the current one was previously the default),
-            # then these links are now incorrect - reset their x_defaults.
+            # Reset x_defaults for those who referred to this category as default
             Category.where.not(id: [category.id, x_defaults]).find_each do |c|
               if c.custom_fields["x_defaults"].to_i == category.id
                 c.custom_fields["x_defaults"] = nil
@@ -70,8 +69,10 @@ module DiscourseCategoryLanguage
               end
             end
 
-            # CASE: assign alternates (current category becomes default)
           elsif alternates
+            #
+            # CASE 2: assign alternates (the current category becomes the default)
+            #
             current_language_id = category.custom_fields["language_id"]&.to_i
             default_language_id = ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
 
@@ -79,21 +80,13 @@ module DiscourseCategoryLanguage
               raise Discourse::InvalidParameters.new("Only default-language category can have alternates")
             end
 
-            # Save alternates to the current category
+            # 1. Save the list of alts in the default
             category.custom_fields["alternates"] = alternates
             category.custom_fields["x_defaults"] = nil
             category.save_custom_fields
 
-            # For each category from the alternates list, set x_defaults = category.id
-            Category.where(id: alternates).find_each do |c|
-              c.custom_fields["x_defaults"] = category.id
-              c.save_custom_fields
-            end
-
-            # We remove these alternates from other defaults, and for those who had x_defaults == category.id but not in the alternates list,
-            # we reset them
+            # 2. We clean up overlapping alt and extra x_defaults for the others
             Category.where.not(id: category.id).find_each do |c|
-              # удалить выбранные alt-ид из alternates других дефолтных
               if c.custom_fields["alternates"].present?
                 current_alts = Array(c.custom_fields["alternates"]).map(&:to_i)
                 new_alts = current_alts - alternates
@@ -103,15 +96,20 @@ module DiscourseCategoryLanguage
                 end
               end
 
-              # if someone's x_defaults points to the current category, but its id is not in alternates - reset
               if c.custom_fields["x_defaults"].to_i == category.id && !alternates.include?(c.id)
                 c.custom_fields["x_defaults"] = nil
                 c.save_custom_fields
               end
             end
+
+            # 3. And only after cleaning we assign x_defaults to children
+            Category.where(id: alternates).find_each do |c|
+              c.custom_fields["x_defaults"] = category.id
+              c.save_custom_fields
+            end
           end
 
-          # We update the category language if a parameter has arrived
+          # Update the language_id if it arrived.
           category.custom_fields["language_id"] = language_id if language_id
           category.save_custom_fields
         end

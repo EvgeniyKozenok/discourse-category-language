@@ -2,12 +2,14 @@
 import { tracked } from "@glimmer/tracking";
 import Controller from "@ember/controller";
 import { action } from "@ember/object";
+import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
-import showConfirmModal from "discourse/lib/show-confirm-modal";
 import { i18n } from "discourse-i18n";
 
 export default class AdminPluginsDiscourseCategoryLanguageController extends Controller {
+  @service dialog;
+
   @tracked languages = [];
   @tracked showModal = false;
   @tracked editingLanguage = null;
@@ -42,43 +44,39 @@ export default class AdminPluginsDiscourseCategoryLanguageController extends Con
 
   @action
   async deleteLanguage(language) {
-    const confirmed = await showConfirmModal({
-      title: i18n("js.discourse_category_language.confirm_delete", {
+    await this.dialog.yesNoConfirm({
+      message: i18n("js.discourse_category_language.confirm_delete", {
         name: language.name,
       }),
+      didConfirm: async () => {
+        const DEFAULT_LANGUAGE_ID =
+          this.siteSettings.discourse_category_language_default_id;
+        if (language.id === DEFAULT_LANGUAGE_ID) {
+          popupAjaxError({
+            jqXHR: {
+              responseJSON: {
+                errors: ["Cannot delete default language."],
+              },
+            },
+          });
+          return;
+        }
+        try {
+          await ajax(`/admin/discourse-category-language/${language.id}`, {
+            type: "DELETE",
+          });
+          this.languages = this.languages.filter((l) => l.id !== language.id);
+        } catch (err) {
+          popupAjaxError({
+            jqXHR: {
+              responseJSON: {
+                errors: ["Error delete language:" + err.message],
+              },
+            },
+          });
+        }
+      }
     });
-
-    if (!confirmed) {
-      return;
-    }
-
-    const DEFAULT_LANGUAGE_ID =
-      this.siteSettings.discourse_category_language_default_id;
-    if (language.id === DEFAULT_LANGUAGE_ID) {
-      popupAjaxError({
-        jqXHR: {
-          responseJSON: {
-            errors: ["Cannot delete default language."],
-          },
-        },
-      });
-      return;
-    }
-
-    try {
-      await ajax(`/admin/discourse-category-language/${language.id}`, {
-        type: "DELETE",
-      });
-      this.languages = this.languages.filter((l) => l.id !== language.id);
-    } catch (err) {
-      popupAjaxError({
-        jqXHR: {
-          responseJSON: {
-            errors: ["Error delete language:" + err.message],
-          },
-        },
-      });
-    }
   }
 
   @action

@@ -5,11 +5,11 @@ import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
-import showConfirmModal from "discourse/lib/show-confirm-modal";
 import { i18n } from "discourse-i18n";
 
 export default class CategoryLanguageSettings extends Component {
   @service siteSettings;
+  @service dialog;
 
   @tracked availableLanguages = [];
   @tracked selectedLanguage = null;
@@ -21,7 +21,74 @@ export default class CategoryLanguageSettings extends Component {
   alternatesLabel = i18n("discourse_category_language.alternates_label");
   defaultCategoryLabel = i18n("discourse_category_language.default_label");
 
-  constructor() {
+  // --- Another private function to save language ---
+#saveChangeCategoryLanguage = async (newLanguageId) => {
+    // We save the language on the server (and get the updated language_id)
+    try {
+      const response = await ajax(
+        `/admin/discourse-category-language/categories/${this.category.id}`,
+        {
+          type: "PATCH",
+          data: { language_id: newLanguageId },
+        }
+      );
+
+      this.category.custom_fields.language_id =
+        response.language_id || this.category.custom_fields.language_id;
+    } catch (err) {
+      popupAjaxError({
+        jqXHR: {
+          responseJSON: {
+            errors: ["Error saving language: " + err.message],
+          },
+        },
+      });
+      return;
+    }
+
+    // Let's update the UI
+    await this.loadRelations();
+  };
+
+#saveChangeCategoryLanguageAndClearOldRelations = async (newLanguageId) => {
+    const lang = this.availableLanguages.find(
+      (l) => +l.value === +newLanguageId
+    );
+    await this.dialog.yesNoConfirm({
+      message: i18n("js.discourse_category_language.confirm_language_change", {
+        name: lang ? lang.label : newLanguageId,
+      }),
+      didConfirm: async () => {
+        // Resetting connections for the current category (the server will disable the rest)
+        try {
+          await ajax(
+            `/admin/discourse-category-language/categories/${this.category.id}`,
+            {
+              type: "PATCH",
+              data: { x_defaults: null, alternates: [] },
+            }
+          );
+        } catch (err) {
+          popupAjaxError({
+            jqXHR: {
+              responseJSON: {
+                errors: ["Error clear category relations: " + err.message],
+              },
+            },
+          });
+          return;
+        }
+
+        // Let's update locally so we don't keep old values
+        this.category.custom_fields.x_defaults = null;
+        this.category.custom_fields.alternates = [];
+
+        await this.#saveChangeCategoryLanguage(newLanguageId);
+      }
+    });
+  };
+
+constructor() {
     super(...arguments);
     this.loadRelations();
   }
@@ -166,16 +233,10 @@ export default class CategoryLanguageSettings extends Component {
       }
     } catch (err) {
       popupAjaxError(err);
-      // console.error("loadRelations error", err);
       this.availableCategories = [];
       this.selectedAlternates = [];
       this.selectedDefaultCategory = null;
     }
-
-    // debug
-    // console.log("availableCategories:", this.availableCategories);
-    // console.log("selectedAlternates (ids):", this.selectedAlternates);
-    // console.log("selectedDefaultCategory (id):", this.selectedDefaultCategory);
   }
 
   // --- Saving alternates / x_defaults ---
@@ -192,13 +253,6 @@ export default class CategoryLanguageSettings extends Component {
       data.x_defaults = ids.length > 0 ? ids[0] : null;
       data.alternates = [];
     }
-
-    //console.log(
-    //  "Saving category relations:",
-    //  data,
-    //  "for category",
-    //  this.category.id
-    //);
 
     try {
       const response = await ajax(
@@ -231,61 +285,15 @@ export default class CategoryLanguageSettings extends Component {
   // --- Change category language (with confirmation if there are links) ---
   @action
   async onChange(newLanguageId) {
-    try {
-      const hasRelations =
-        !!this.category.custom_fields.x_defaults ||
-        (Array.isArray(this.category.custom_fields.alternates) &&
-          this.category.custom_fields.alternates.length > 0);
+    const hasRelations =
+      !!this.category.custom_fields.x_defaults ||
+      (Array.isArray(this.category.custom_fields.alternates) &&
+        this.category.custom_fields.alternates.length > 0);
 
-      if (hasRelations) {
-        const lang = this.availableLanguages.find(
-          (l) => +l.value === +newLanguageId
-        );
-        const confirmed = await showConfirmModal({
-          title: i18n("s.discourse_category_language.confirm_language_change", {
-            name: lang ? lang.label : newLanguageId,
-          }),
-        });
-        if (!confirmed) {
-          return;
-        }
-
-        // Resetting connections for the current category (the server will disable the rest)
-        await ajax(
-          `/admin/discourse-category-language/categories/${this.category.id}`,
-          {
-            type: "PATCH",
-            data: { x_defaults: null, alternates: [] },
-          }
-        );
-
-        // Let's update locally so we don't keep old values
-        this.category.custom_fields.x_defaults = null;
-        this.category.custom_fields.alternates = [];
-      }
-
-      // We save the language on the server (and get the updated language_id)
-      const response = await ajax(
-        `/admin/discourse-category-language/categories/${this.category.id}`,
-        {
-          type: "PATCH",
-          data: { language_id: newLanguageId },
-        }
-      );
-
-      this.category.custom_fields.language_id =
-        response.language_id || this.category.custom_fields.language_id;
-
-      // Let's update the UI
-      await this.loadRelations();
-    } catch (err) {
-      popupAjaxError({
-        jqXHR: {
-          responseJSON: {
-            errors: ["Error saving language: " + err.message],
-          },
-        },
-      });
+    if (hasRelations) {
+      await this.#saveChangeCategoryLanguageAndClearOldRelations(newLanguageId);
+    } else {
+      await this.#saveChangeCategoryLanguage(newLanguageId);
     }
   }
 }
