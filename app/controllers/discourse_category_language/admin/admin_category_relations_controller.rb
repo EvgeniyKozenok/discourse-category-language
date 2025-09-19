@@ -45,6 +45,7 @@ module DiscourseCategoryLanguage
         }
       end
 
+
       # PATCH /admin/discourse-category-language/categories/:id
       def update
         category = Category.find_by(id: params[:id])

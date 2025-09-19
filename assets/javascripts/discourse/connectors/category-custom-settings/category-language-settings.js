@@ -25,13 +25,10 @@ export default class CategoryLanguageSettings extends Component {
   // --- Another private function to save language ---
   #saveChangeCategoryLanguage = async (newLanguageId) => {
     try {
-      await ajax(
-        this.#getHandleUrl(),
-        {
-          type: "PATCH",
-          data: { language_id: newLanguageId },
-        }
-      );
+      await ajax(this.#getHandleUrl(), {
+        type: "PATCH",
+        data: { language_id: newLanguageId },
+      });
       this.category.custom_fields.language_id = newLanguageId;
     } catch (err) {
       popupAjaxError({
@@ -61,7 +58,8 @@ export default class CategoryLanguageSettings extends Component {
     });
   };
 
-  #getHandleUrl = () => `/admin/discourse-category-language/categories/${this.category.id}`;
+  #getHandleUrl = () =>
+    `/admin/discourse-category-language/categories/${this.category.id}`;
 
   constructor() {
     super(...arguments);
@@ -133,13 +131,10 @@ export default class CategoryLanguageSettings extends Component {
     }
 
     try {
-     await ajax(
-        this.#getHandleUrl(),
-        {
-          type: "PATCH",
-          data,
-        }
-      );
+      await ajax(this.#getHandleUrl(), {
+        type: "PATCH",
+        data,
+      });
 
       await this.loadRelations();
     } catch (err) {
@@ -157,8 +152,8 @@ export default class CategoryLanguageSettings extends Component {
   @action
   async onChange(newLanguageId) {
     if (
-      this.isCategoryWithDefaultLanguage && this.selectedAlternates.length
-      || !this.isCategoryWithDefaultLanguage && this.selectedDefaultCategory
+      (this.isCategoryWithDefaultLanguage && this.selectedAlternates.length) ||
+      (!this.isCategoryWithDefaultLanguage && this.selectedDefaultCategory)
     ) {
       await this.#saveChangeCategoryLanguageAndClearOldRelations(newLanguageId);
     } else {
