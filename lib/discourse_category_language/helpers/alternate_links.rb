@@ -9,10 +9,9 @@ module ::DiscourseCategoryLanguage::Helpers
 
     # general method for generating html
     def build_alternate_links(mapping)
-      # until we implement alternatives, we'll simply clear the generated list - later, delete/comment out this line
-      mapping = {}
       mapping.map do |lang, url|
-        %Q(<link rel="alternate" hreflang="#{lang}" href="#{url}" />)
+        # until we implement alternatives, we'll simply clear the generated list - later, delete/comment out this line
+        # %Q(<link rel="alternate" hreflang="#{lang}" href="#{url}" />)
       end.join("\n")
     end
 

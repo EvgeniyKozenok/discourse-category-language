@@ -41,6 +41,11 @@ class CreateCategoryLanguages < ActiveRecord::Migration[6.1]
       SQL
     end
 
+    # synchronize the sequence with the maximum id
+    execute <<~SQL
+      SELECT setval('plugin_category_languages_id_seq', (SELECT COALESCE(MAX(id), 1) FROM plugin_category_languages));
+    SQL
+
     # mapping: category -> languages
     category_mapping = {
       "swedish-forum"               => "se",
