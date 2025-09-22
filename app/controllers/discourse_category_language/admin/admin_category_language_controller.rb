@@ -74,6 +74,12 @@ module DiscourseCategoryLanguage
           return
         end
 
+        # removing custom category fields
+        CategoryCustomField.where(name: 'language_id', value: language.id).delete_all
+
+        # removing custom topic fields
+        TopicCustomField.where(name: 'language_id', value: language.id).delete_all
+
         language.destroy
         render json: { success: true }
       end
