@@ -17,6 +17,7 @@ export default class CategoryLanguageSettings extends Component {
   @tracked selectedAlternates = []; // array id (numbers)
   @tracked selectedDefaultCategory = null; // id (number) or null
   @tracked isCategoryWithDefaultLanguage = true;
+  @tracked isManualRelationsActive = false;
 
   languageLabel = i18n("discourse_category_language.label");
   alternatesLabel = i18n("discourse_category_language.alternates_label");

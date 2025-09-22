@@ -10,7 +10,7 @@
   />
 </section>
 
-{{#if this.isCategoryWithDefaultLanguage}}
+{{#if (and this.isCategoryWithDefaultLanguage this.isManualRelationsActive)}}
   <section class="field">
     <label>{{this.alternatesLabel}}</label>
     <MultiSelect
@@ -21,7 +21,7 @@
       @nameProperty="label"
     />
   </section>
-{{else}}
+{{else if this.isManualRelationsActive}}
   <section class="field">
     <label>{{this.defaultCategoryLabel}}</label>
     <ComboBox
