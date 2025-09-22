@@ -27,7 +27,7 @@ module ::DiscourseCategoryLanguage::Helpers
         # -----------------------
         # Category
         # -----------------------
-      elsif path =~ %r{^/c/[^/]+/(\d+)}
+      elsif path =~ %r{^/c/(?:[^/]+/)+(\d+)}
         category = Category.find_by(id: $1.to_i)
       end
 
@@ -40,7 +40,18 @@ module ::DiscourseCategoryLanguage::Helpers
 
     # category slug
     def language_slug_for_category(category)
-      language_id = category&.custom_fields&.dig("language_id") || ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
+      current = category
+      language_id = nil
+
+      while current
+        language_id = current.custom_fields&.dig("language_id")
+        break if language_id.present?
+
+        current = current.parent_category
+      end
+
+      language_id ||= ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
+
       lang = ::DiscourseCategoryLanguage::Language.find_by(id: language_id)
       lang&.slug
     end

@@ -8,7 +8,7 @@ export default {
     withPluginApi("0.8.7", (api) => {
       const categoryCache = new Map();
       let isLoaded = true;
-      let defaultSlug = '';
+      let defaultSlug = "";
 
       function updateHtmlLang(slug) {
         const el = document.documentElement;
@@ -50,8 +50,8 @@ export default {
           return { entityId, entityType };
         }
 
-        // Category URL: /c/:slug/:categoryId(/:topicId)?
-        match = path.match(/^\/c\/[^/]+\/(\d+)/);
+        // Category URL: /c/:slug/.../:categoryId
+        match = path.match(/^\/c\/.*\/(\d+)/);
         if (match) {
           entityId = match[1];
           entityType = "category";
