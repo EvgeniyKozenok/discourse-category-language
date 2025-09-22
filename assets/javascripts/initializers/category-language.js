@@ -8,6 +8,7 @@ export default {
     withPluginApi("0.8.7", (api) => {
       const categoryCache = new Map();
       let isLoaded = true;
+      let defaultSlug = '';
 
       function updateHtmlLang(slug) {
         const el = document.documentElement;
@@ -15,14 +16,13 @@ export default {
           return;
         }
         el.setAttribute("lang", slug);
-        // console.log("SPA lang updated:", slug);
       }
 
       function updateAlternateLinks(alternates) {
         if (isLoaded) {
           // Only update the first time the SPA is loaded
           // Render with server side rendered content
-          isLoaded = false;
+          //isLoaded = false;
           return;
         }
 
@@ -36,7 +36,6 @@ export default {
           link.href = url;
           document.head.appendChild(link);
         });
-        //console.log("SPA alternates updated:", alternates);
       }
 
       function getEntityFromUrl() {
@@ -65,6 +64,10 @@ export default {
       api.onPageChange(async () => {
         const entity = getEntityFromUrl();
         if (!entity) {
+          if (defaultSlug.length) {
+            updateHtmlLang(defaultSlug);
+            updateAlternateLinks({});
+          }
           return;
         }
 
@@ -77,9 +80,11 @@ export default {
           return;
         }
 
-        const { slug, alternates } = await ajax(
+        const { slug, alternates, default_slug } = await ajax(
           `/admin/discourse-category-language/spa-meta/${entityId}/${entityType}`
         );
+
+        defaultSlug = default_slug;
 
         categoryCache.set(entityId, { slug, alternates });
 

@@ -16,6 +16,9 @@ module DiscourseCategoryLanguage
         entity_type = params[:entity]
         entity_id = params[:id]
 
+        default_language = DiscourseCategoryLanguage::Language.find(::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID)
+        default_slug = default_language.slug
+
         case entity_type
         when "topic"
           topic = Topic.find_by(id: entity_id)
@@ -41,7 +44,7 @@ module DiscourseCategoryLanguage
           return
         end
 
-        render json: { slug: lang_slug, alternates: alternates }
+        render json: { slug: lang_slug, default_slug: default_slug, alternates: alternates }
       end
 
       # POST /admin/discourse-category-language
