@@ -17,7 +17,7 @@ module DiscourseCategoryLanguage
             selected_id =
               category.custom_fields["language_id"] ||
               category.parent_category&.custom_fields&.dig("language_id") ||
-              SiteSetting.discourse_category_language_default_id
+              ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
           end
         end
 
