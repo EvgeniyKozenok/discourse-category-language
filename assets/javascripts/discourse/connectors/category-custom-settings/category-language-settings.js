@@ -62,8 +62,8 @@ export default class CategoryLanguageSettings extends Component {
   #getHandleUrl = () =>
     `/admin/discourse-category-language/categories/${this.category.id}`;
 
-  constructor() {
-    super(...arguments);
+  didInsertElement() {
+    super.didInsertElement(...arguments);
     this.loadRelations();
   }
 
@@ -80,7 +80,9 @@ export default class CategoryLanguageSettings extends Component {
 
   async loadLanguages() {
     try {
-      const response = await ajax("/admin/discourse-category-language/list");
+      const response = await ajax(
+        `/admin/discourse-category-language/list?category_id=${this.category.id}`
+      );
       this.availableLanguages = response.languages.map((l) => ({
         label: `${l.name} [${l.slug}]`,
         value: +l.id,
@@ -88,11 +90,8 @@ export default class CategoryLanguageSettings extends Component {
 
       this.selectedLanguage =
         this.availableLanguages.find(
-          (l) => +l.value === this.getCategoryLanguageId
-        ) ||
-        this.availableLanguages.find(
-          (l) => +l.value === this.intDefaultLanguageId
-        );
+          (l) => +l.value === +response.selected_id
+        ) || null;
     } catch (err) {
       popupAjaxError(err);
       this.availableLanguages = [];

@@ -8,8 +8,25 @@ module DiscourseCategoryLanguage
       # GET /admin/discourse-category-language/list
       def list
         languages = DiscourseCategoryLanguage::Language.order(:id)
-        render json: { languages: languages.as_json(only: [:id, :name, :slug]) }
+
+        selected_id = nil
+        if params[:category_id].present?
+          category = Category.find_by(id: params[:category_id])
+
+          if category
+            selected_id =
+              category.custom_fields["language_id"] ||
+              category.parent_category&.custom_fields&.dig("language_id") ||
+              SiteSetting.discourse_category_language_default_id
+          end
+        end
+
+        render json: {
+          languages: languages.as_json(only: [:id, :name, :slug]),
+          selected_id: selected_id
+        }
       end
+
 
       # GET /admin/discourse-category-language/spa-meta/:id
       def spa_meta
