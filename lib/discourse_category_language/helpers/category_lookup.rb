@@ -11,11 +11,11 @@ module ::DiscourseCategoryLanguage::Helpers
       # -----------------------
       # Topic or Post
       # -----------------------
-      if path =~ %r{^/t/([^/]+)(?:/(\d+))?}
-        topic_slug = $1
-        post_number = $2
+      if match = path.match(%r{^/t/[^/]+/(\d+)(?:/(\d+))?})
+        topic_id = match[1].to_i
+        post_number = match[2]
 
-        topic = Topic.find_by(slug: topic_slug) || Topic.find_by(id: topic_slug.to_i)
+        topic = Topic.find_by(id: topic_id)
 
         if topic
           category = topic.category
@@ -27,8 +27,9 @@ module ::DiscourseCategoryLanguage::Helpers
         # -----------------------
         # Category
         # -----------------------
-      elsif path =~ %r{^/c/(?:[^/]+/)+(\d+)}
-        category = Category.find_by(id: $1.to_i)
+      elsif match = path.match(%r{^/c/(?:[^/]+/)+(\d+)})
+        category_id = match[1].to_i
+        category = Category.find_by(id: category_id)
       end
 
       { post: post, topic: topic, category: category }
