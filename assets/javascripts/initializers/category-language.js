@@ -11,6 +11,9 @@ export default {
       let defaultSlug = "";
 
       function updateHtmlLang(slug) {
+        if (!slug || typeof slug !== "string") {
+          return;
+        }
         const el = document.documentElement;
         if (el.getAttribute("lang") === slug) {
           return;
@@ -81,12 +84,16 @@ export default {
         }
 
         const { slug, alternates, default_slug } = await ajax(
-          `/admin/discourse-category-language/spa-meta/${entityId}/${entityType}`
+          `/discourse-category-language/spa-meta/${entityId}/${entityType}`
         );
 
         defaultSlug = default_slug;
 
         categoryCache.set(entityId, { slug, alternates });
+
+        if (!slug) {
+          return;
+        }
 
         updateHtmlLang(slug);
         updateAlternateLinks(alternates);
