@@ -64,6 +64,10 @@ export default class CategoryLanguageSettings extends Component {
 
   didInsertElement() {
     super.didInsertElement(...arguments);
+    if (!this.category || !this.category.id) {
+      return;
+    }
+
     this.loadRelations();
   }
 
@@ -79,6 +83,12 @@ export default class CategoryLanguageSettings extends Component {
   }
 
   async loadLanguages() {
+    if (!this.category || !this.category.id) {
+      this.availableLanguages = [];
+      this.selectedLanguage = null;
+      return;
+    }
+
     try {
       const response = await ajax(
         `/admin/discourse-category-language/list?category_id=${this.category.id}`
