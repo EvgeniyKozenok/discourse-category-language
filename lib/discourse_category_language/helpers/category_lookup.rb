@@ -11,7 +11,7 @@ module ::DiscourseCategoryLanguage::Helpers
       # -----------------------
       # Topic or Post
       # -----------------------
-      if match = path.match(%r{^/t/[^/]+/(\d+)(?:/(\d+))?})
+      if match = path.match(%r{/t/[^/]+/(\d+)(?:/(\d+))?})
         topic_id = match[1].to_i
         post_number = match[2]
 
@@ -27,7 +27,7 @@ module ::DiscourseCategoryLanguage::Helpers
         # -----------------------
         # Category
         # -----------------------
-      elsif match = path.match(%r{^/c/(?:[^/]+/)+(\d+)})
+      elsif match = path.match(%r{/c/(?:[^/]+/)+(\d+)})
         category_id = match[1].to_i
         category = Category.find_by(id: category_id)
       end

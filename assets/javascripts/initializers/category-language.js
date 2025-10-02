@@ -46,7 +46,7 @@ export default {
         let match, entityId, entityType;
 
         // Topic URL: /t/:slug/:topicId(/:postNumber)?
-        match = path.match(/^\/t\/[^/]+\/(\d+)/);
+        match = path.match(/\/t\/[^/]+\/(\d+)/);
         if (match) {
           entityId = match[1];
           entityType = "topic";
@@ -54,7 +54,7 @@ export default {
         }
 
         // Category URL: /c/:slug/.../:categoryId
-        match = path.match(/^\/c\/.*\/(\d+)/);
+        match = path.match(/\/c\/.*\/(\d+)/);
         if (match) {
           entityId = match[1];
           entityType = "category";
