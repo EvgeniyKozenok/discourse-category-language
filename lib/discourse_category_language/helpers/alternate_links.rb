@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# # lib/discourse_category_language/helpers/alternate_links.rb
+# lib/discourse_category_language/helpers/alternate_links.rb
 
 require_dependency File.expand_path("category_lookup", __dir__)
 
@@ -11,42 +11,42 @@ module ::DiscourseCategoryLanguage::Helpers
     def build_alternate_links(mapping)
       mapping.map do |lang, url|
         # until we implement alternatives, we'll simply clear the generated list - later, delete/comment out this line
-        # %Q(<link rel="alternate" hreflang="#{lang}" href="#{url}" />)
+        %Q(<link rel="alternate" hreflang="#{lang}" href="#{url}" />)
       end.join("\n")
     end
 
     # category handler
     def alternates_for_category(category)
       return {} unless category
-
-      # if there is x_defaults, use the category with this ID
-      if category.custom_fields["x_defaults"].present?
-        category_id = category.custom_fields["x_defaults"].to_i
-        category = Category.find_by(id: category_id)
-        return {} unless category
-      end
-
-      alternate_ids = category.custom_fields["alternates"]
-      build_category_alternates(category, alternate_ids)
+      build_category_alternates(category)
     end
 
     # topic handler
     def alternates_for_topic(topic)
       return {} unless topic
-
-      if topic.custom_fields["x_defaults"].present?
-        topic_id = topic.custom_fields["x_defaults"].to_i
-        topic = Topic.find_by(id: topic_id)
-        return {} unless topic
-      end
-
-      alternate_ids = topic.custom_fields["alternates"]
-      build_topic_alternates(topic, alternate_ids)
+      build_topic_alternates(topic)
     end
 
-    # post handler (if we decide to support it)
+    # post handler
     def alternates_for_post(post)
-      {}
+      return {} unless post && post.topic
+      alternates_for_topic(post.topic)
+    end
+
+    def language_slug_for_category(category)
+      current = category
+      language_id = nil
+
+      while current
+        language_id = current.custom_fields&.dig("language_id")
+        break if language_id.present?
+
+        current = current.parent_category
+      end
+
+      language_id ||= ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
+      lang = ::DiscourseCategoryLanguage::Language.find_by(id: language_id)
+      lang&.slug
     end
 
     private
@@ -56,50 +56,76 @@ module ::DiscourseCategoryLanguage::Helpers
     end
 
     # --- topics ---
-    def build_topic_alternates(topic, alternate_ids)
-      return {} if topic.nil?
+    def build_topic_alternates(topic)
+      return {} unless topic
 
       mapping = {}
-      x_default_url = "#{current_base_url}/t/#{topic.slug}/#{topic.id}"
-      mapping["x-default"] = x_default_url
 
-      # key with the language of the category of the current topic
       lang_slug = language_slug_for_category(topic.category)
-      mapping[lang_slug] = x_default_url if lang_slug
+      mapping[lang_slug] = "#{current_base_url}/t/#{topic.slug}/#{topic.id}" if lang_slug
 
-      return mapping if alternate_ids.blank?
+      alternate_group = topic.custom_fields["alternates"]
 
-      ids = Array(alternate_ids).map(&:to_i)
-      Topic.where(id: ids).includes(:category).find_each do |alt_topic|
-        alt_lang_slug = language_slug_for_category(alt_topic.category)
-        mapping[alt_lang_slug] = "#{current_base_url}/t/#{alt_topic.slug}/#{alt_topic.id}" if alt_lang_slug
+      if alternate_group.present?
+        Topic
+          .joins(:_custom_fields)
+          .where(topic_custom_fields: { name: "alternates", value: alternate_group })
+          .where.not(id: topic.id)
+          .includes(:category)
+          .find_each do |alt_topic|
+          alt_lang_slug = language_slug_for_category(alt_topic.category)
+          mapping[alt_lang_slug] = "#{current_base_url}/t/#{alt_topic.slug}/#{alt_topic.id}" if alt_lang_slug
+        end
       end
 
-      mapping
+      prepend_x_default(mapping)
     end
+
 
     # --- categories ---
-    def build_category_alternates(category, alternate_ids)
-      return {} if category.nil?
+    def build_category_alternates(category)
+      return {} unless category
 
       mapping = {}
-      x_default_url = "#{current_base_url}/c/#{category.slug}/#{category.id}"
-      mapping["x-default"] = x_default_url
 
-      # key with category language
       lang_slug = language_slug_for_category(category)
-      mapping[lang_slug] = x_default_url if lang_slug
+      mapping[lang_slug] = "#{current_base_url}/c/#{category.slug}/#{category.id}" if lang_slug
 
-      return mapping if alternate_ids.blank?
+      alternate_group = category.custom_fields["alternates"]
 
-      ids = Array(alternate_ids).map(&:to_i)
-      Category.where(id: ids).find_each do |alt_category|
-        alt_lang_slug = language_slug_for_category(alt_category)
-        mapping[alt_lang_slug] = "#{current_base_url}/c/#{alt_category.slug}/#{alt_category.id}" if alt_lang_slug
+      if alternate_group.present?
+        Category
+          .joins(:_custom_fields)
+          .where(category_custom_fields: { name: "alternates", value: alternate_group })
+          .where.not(id: category.id)
+          .includes(:parent_category)
+          .find_each do |alt_category|
+          alt_lang_slug = language_slug_for_category(alt_category)
+          mapping[alt_lang_slug] = "#{current_base_url}/c/#{alt_category.slug}/#{alt_category.id}" if alt_lang_slug
+        end
       end
 
-      mapping
+      prepend_x_default(mapping)
     end
+
+    # --- helpers ---
+    def prepend_x_default(mapping)
+      return mapping if mapping.blank?
+
+      default_lang = ::DiscourseCategoryLanguage::Language.find_by(
+        id: ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
+      )&.slug
+
+      if default_lang.blank? || !mapping.key?(default_lang)
+        first_lang, first_url = mapping.first
+        { "x-default" => first_url, first_lang => first_url }.merge(mapping)
+      else
+        default_url = mapping[default_lang]
+        mapping_without_default = mapping.reject { |k, _| k == default_lang }
+        { "x-default" => default_url, default_lang => default_url }.merge(mapping_without_default)
+      end
+    end
+
 
   end
 end

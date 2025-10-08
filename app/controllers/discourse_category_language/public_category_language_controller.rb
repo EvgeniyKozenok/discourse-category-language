@@ -5,6 +5,8 @@ module DiscourseCategoryLanguage
     requires_plugin ::DiscourseCategoryLanguage::PLUGIN_NAME
     requires_login false
 
+    helper ::DiscourseCategoryLanguage::Helpers::AlternateLinks
+
     # GET /discourse-category-language/spa-meta/:id/:entity
     def spa_meta
       entity_type = params[:entity]

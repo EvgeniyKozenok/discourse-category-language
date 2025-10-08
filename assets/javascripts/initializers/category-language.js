@@ -25,7 +25,7 @@ export default {
         if (isLoaded) {
           // Only update the first time the SPA is loaded
           // Render with server side rendered content
-          //isLoaded = false;
+          isLoaded = false;
           return;
         }
 
