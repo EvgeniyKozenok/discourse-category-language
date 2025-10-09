@@ -12,7 +12,10 @@ module ::DiscourseCategoryLanguage::Helpers
       return "" if mapping.blank?
 
       "\n" + mapping.map do |lang, url|
-        cleaned_url = url.squeeze('/')
+        cleaned_url = url.sub('://', '___PROTO___')
+        cleaned_url = cleaned_url.squeeze('/')
+        cleaned_url = cleaned_url.sub('___PROTO___', '://')
+
         %Q(<link rel="alternate" hreflang="#{lang}" href="#{cleaned_url}" />)
       end.join("\n")
     end
