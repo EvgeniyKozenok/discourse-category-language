@@ -121,13 +121,17 @@ module ::DiscourseCategoryLanguage::Helpers
         id: ::DiscourseCategoryLanguage::DEFAULT_LANGUAGE_ID
       )&.slug
 
+      default_url = if default_lang.present? && mapping.key?(default_lang)
+                      mapping[default_lang]
+                    else
+                      "#{Discourse.base_url}/"
+                    end
+
       if default_lang.present? && mapping.key?(default_lang)
-        default_url = mapping[default_lang]
-        mapping_without_default = mapping.reject { |k, _| k == default_lang }
-        mapping = { "x-default" => default_url, default_lang => default_url }.merge(mapping_without_default)
+        mapping = mapping.reject { |k, _| k == default_lang }
       end
 
-      mapping
+      { "x-default" => default_url, default_lang => default_url }.merge(mapping)
     end
 
   end
